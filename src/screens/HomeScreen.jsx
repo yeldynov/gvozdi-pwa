@@ -1,11 +1,12 @@
 import { useState } from 'react'
+import { useUser } from '@clerk/react'
 import Icons from '../icons'
 import { WeeklyChart } from './WeeklyChart'
 
 export function HomeScreen({ nav }) {
-  const mood = useState('settled')
-  const [, setM] = mood
-  const [moodV] = mood
+  const { user } = useUser()
+  const firstName = user?.firstName || user?.fullName?.split(' ')[0] || 'there'
+  const [moodV, setM] = useState('settled')
   const moodOpts = [
     { k: 'tense', label: 'Tense', I: Icons.spark },
     { k: 'neutral', label: 'Neutral', I: Icons.moon },
@@ -33,7 +34,7 @@ export function HomeScreen({ nav }) {
           <div className='display text-[30px] leading-[1.15]'>
             Good morning,
             <br />
-            Alex.
+            {firstName}.
           </div>
         </div>
 

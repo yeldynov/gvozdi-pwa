@@ -1,6 +1,9 @@
+import { useClerk } from '@clerk/react'
 import Icons from '../icons'
 
-export function WelcomeScreen({ nav }) {
+export function WelcomeScreen() {
+  const { openSignIn, openSignUp } = useClerk()
+
   return (
     <div className='h-full flex flex-col bg-bg pt-16 px-7 pb-9 animate-fade-up'>
       <div className='flex items-center gap-2'>
@@ -26,26 +29,23 @@ export function WelcomeScreen({ nav }) {
       </div>
 
       <div className='flex flex-col gap-[10px]'>
-        <button className='btn' onClick={() => nav('practice-select')}>
+        <button className='btn' onClick={() => openSignUp()}>
           Begin your practice
         </button>
-        <div className='flex gap-[10px]'>
-          <button
-            className='btn ghost flex-1 flex items-center justify-center gap-2'
-            style={{ padding: '14px' }}
-          >
-            <Icons.apple size={18} /> Apple
-          </button>
-          <button
-            className='btn ghost flex-1 flex items-center justify-center gap-2'
-            style={{ padding: '14px' }}
-          >
-            <Icons.google size={18} /> Google
-          </button>
-        </div>
+        <button
+          className='btn ghost flex items-center justify-center gap-2'
+          onClick={() => openSignIn()}
+        >
+          <Icons.google size={18} /> Continue with Google
+        </button>
         <div className='text-center text-text-2 mt-1 text-[13px]'>
           Already practicing?{' '}
-          <span className='text-text border-b border-text pb-px'>Sign in</span>
+          <span
+            className='text-text border-b border-text pb-px cursor-pointer'
+            onClick={() => openSignIn()}
+          >
+            Sign in
+          </span>
         </div>
       </div>
     </div>

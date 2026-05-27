@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '@clerk/react'
 import Icons from './icons'
 import { WelcomeScreen } from './screens/WelcomeScreen'
 import { PracticeSelectScreen } from './screens/PracticeSelectScreen'
@@ -62,8 +63,9 @@ function PWAFrame({ children, bottomNav }) {
   )
 }
 
-function App({ start = 'welcome' }) {
-  const [screen, setScreen] = useState(start)
+function App() {
+  const { isLoaded, isSignedIn } = useAuth()
+  const [screen, setScreen] = useState('home')
 
   const tabRoutes = ['home', 'library', 'progress', 'profile']
   const isTab = tabRoutes.includes(screen)
@@ -73,8 +75,19 @@ function App({ start = 'welcome' }) {
     else setScreen(to)
   }
 
+  if (!isLoaded) {
+    return <div className='h-full bg-bg' />
+  }
+
+  if (!isSignedIn) {
+    return (
+      <PWAFrame bottomNav={null}>
+        <WelcomeScreen />
+      </PWAFrame>
+    )
+  }
+
   const screens = {
-    welcome: <WelcomeScreen nav={nav} />,
     'practice-select': <PracticeSelectScreen nav={nav} />,
     home: <HomeScreen nav={nav} />,
     library: <LibraryScreen nav={nav} />,
@@ -92,7 +105,7 @@ function App({ start = 'welcome' }) {
     <PWAFrame
       bottomNav={isTab ? <BottomNav tab={screen} setTab={setScreen} /> : null}
     >
-      {screens[screen] || <WelcomeScreen nav={nav} />}
+      {screens[screen] || <HomeScreen nav={nav} />}
     </PWAFrame>
   )
 }
@@ -100,7 +113,7 @@ function App({ start = 'welcome' }) {
 export default function Root() {
   return (
     <div className='gv palette-earthy' style={{ height: '100%' }}>
-      <App start='welcome' />
+      <App />
     </div>
   )
 }
