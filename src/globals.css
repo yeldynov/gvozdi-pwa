@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Gvozdi — palette tokens
    The .gv root holds CSS variables. Tweaks panel swaps the class
    to switch palettes live. All screen components read from --p-*
@@ -228,4 +232,19 @@
   0%   { opacity: 0; transform: scale(0.92); }
   60%  { opacity: 1; transform: scale(1.02); }
   100% { opacity: 1; transform: scale(1); }
+}
+
+@layer components {
+  .gv .gv-brand {
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: 18px;
+    letter-spacing: 0.02em;
+  }
+}
+
+@layer utilities {
+  .bg-illus-gradient {
+    background: linear-gradient(135deg, var(--p-illus) 0%, var(--p-illus-2) 100%);
+  }
 }
