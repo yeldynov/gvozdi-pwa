@@ -5,7 +5,11 @@ export function ProfileScreen({ nav }) {
   const { user } = useUser()
   const { signOut } = useClerk()
 
-  const name = user?.fullName || user?.firstName || user?.emailAddresses?.[0]?.emailAddress || 'User'
+  const name =
+    user?.fullName ||
+    user?.firstName ||
+    user?.emailAddresses?.[0]?.emailAddress ||
+    'User'
   const initial = name.charAt(0).toUpperCase()
   return (
     <div className='h-full overflow-auto bg-bg'>
@@ -26,9 +30,7 @@ export function ProfileScreen({ nav }) {
           <div className='w-20 h-20 rounded-pill mx-auto mb-[14px] flex items-center justify-center font-medium text-text bg-illus-gradient text-[28px] font-display'>
             {initial}
           </div>
-          <div className='display mb-1 text-[22px] leading-[1.15]'>
-            {name}
-          </div>
+          <div className='display mb-1 text-[22px] leading-[1.15]'>{name}</div>
           <div className='text-text-2 italic text-[13px]'>
             "Show up before motivation does."
           </div>
@@ -220,7 +222,9 @@ export function ProfileScreen({ nav }) {
         </div>
 
         <div className='px-6 pt-5'>
-          <button className='btn ghost text-text-2' onClick={() => signOut()}>Sign out</button>
+          <button className='btn ghost text-text-2' onClick={() => signOut()}>
+            Sign out
+          </button>
           <div className='text-center text-text-3 mt-[18px] text-[11px]'>
             gvozdi v1.0 · made calmly
           </div>
