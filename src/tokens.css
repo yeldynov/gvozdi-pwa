@@ -1,0 +1,231 @@
+/* Gvozdi — palette tokens
+   The .gv root holds CSS variables. Tweaks panel swaps the class
+   to switch palettes live. All screen components read from --p-*
+   instead of literal colors so a single class swap re-skins
+   everything. Typography is intentionally palette-agnostic. */
+
+.gv {
+  /* type */
+  --f-display: "Fraunces", "Cormorant Garamond", "PT Serif", Georgia, serif;
+  --f-text: "Inter Tight", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", "SF Mono", ui-monospace, "Menlo", monospace;
+  --f-num: "Inter Tight", -apple-system, system-ui, sans-serif;
+
+  /* radii */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 24px;
+  --r-xl: 32px;
+  --r-pill: 999px;
+
+  /* spacing rhythm (4-pt) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 40px;
+
+  /* defaults (overridden per palette) */
+  --p-mode: light;
+  --p-bg: #fafaf8;
+  --p-bg-2: #f4f4f2;
+  --p-bg-3: #ebe9e5;
+  --p-surface: #ffffff;
+  --p-text: #1a1a1a;
+  --p-text-2: #6a6a6a;
+  --p-text-3: #a8a8a4;
+  --p-divider: rgba(0,0,0,0.07);
+  --p-primary: #2d2d2d;
+  --p-on-primary: #fafaf8;
+  --p-accent: #d4c5b0;
+  --p-success: #a8b5a0;
+  --p-warn: #d99155;
+  --p-error: #c2614d;
+  --p-streak: #d4c5b0;
+  --p-illus: #cdc3b0;
+  --p-illus-2: #ddd3c0;
+}
+
+/* 1 — Mindful Minimalist (default-ish, slightly refined) */
+.gv.palette-minimalist {
+  --p-mode: light;
+  --p-bg: #f7f5f0;
+  --p-bg-2: #efece5;
+  --p-bg-3: #e5e1d8;
+  --p-surface: #ffffff;
+  --p-text: #1a1815;
+  --p-text-2: #6a6760;
+  --p-text-3: #aeaaa1;
+  --p-divider: rgba(26,24,21,0.08);
+  --p-primary: #1a1815;
+  --p-on-primary: #f7f5f0;
+  --p-accent: #c9b896;
+  --p-success: #93a48a;
+  --p-warn: #c89464;
+  --p-error: #b65a47;
+  --p-streak: #c9b896;
+  --p-illus: #d8cdb6;
+  --p-illus-2: #c9bca0;
+}
+
+/* 2 — Earthy Wellness */
+.gv.palette-earthy {
+  --p-mode: light;
+  --p-bg: #f5efe6;
+  --p-bg-2: #ede4d5;
+  --p-bg-3: #e3d7c3;
+  --p-surface: #fbf6ee;
+  --p-text: #2d2419;
+  --p-text-2: #7a6b54;
+  --p-text-3: #b3a48b;
+  --p-divider: rgba(45,36,25,0.10);
+  --p-primary: #5a4a36;
+  --p-on-primary: #fbf6ee;
+  --p-accent: #d98c3c;
+  --p-success: #6f8f6a;
+  --p-warn: #d98c3c;
+  --p-error: #b04a30;
+  --p-streak: #d98c3c;
+  --p-illus: #c2a577;
+  --p-illus-2: #a8814f;
+}
+
+/* 3 — Data-Driven Biohacker (dark) */
+.gv.palette-biohacker {
+  --p-mode: dark;
+  --p-bg: #0a0d12;
+  --p-bg-2: #131820;
+  --p-bg-3: #1c232d;
+  --p-surface: #131820;
+  --p-text: #e6f0fa;
+  --p-text-2: #8a99ab;
+  --p-text-3: #4f5d70;
+  --p-divider: rgba(255,255,255,0.07);
+  --p-primary: #00d4ff;
+  --p-on-primary: #0a0d12;
+  --p-accent: #00ff95;
+  --p-success: #00ff95;
+  --p-warn: #ffb340;
+  --p-error: #ff4d6d;
+  --p-streak: #00d4ff;
+  --p-illus: #1a2533;
+  --p-illus-2: #2a3a4d;
+}
+
+/* 4 — Nordic Zen */
+.gv.palette-nordic {
+  --p-mode: light;
+  --p-bg: #f3f4f6;
+  --p-bg-2: #e7eaef;
+  --p-bg-3: #d6dce4;
+  --p-surface: #ffffff;
+  --p-text: #1f2937;
+  --p-text-2: #5b6a7d;
+  --p-text-3: #9aa6b5;
+  --p-divider: rgba(31,41,55,0.08);
+  --p-primary: #2c3e50;
+  --p-on-primary: #ffffff;
+  --p-accent: #5b7c99;
+  --p-success: #4a9d8f;
+  --p-warn: #d9a440;
+  --p-error: #c0524d;
+  --p-streak: #5b7c99;
+  --p-illus: #cdd6e1;
+  --p-illus-2: #aab7c6;
+}
+
+/* 5 — Subtle Gamification */
+.gv.palette-gamified {
+  --p-mode: light;
+  --p-bg: #f6f4ff;
+  --p-bg-2: #ede9ff;
+  --p-bg-3: #ddd6ff;
+  --p-surface: #ffffff;
+  --p-text: #1e1b3a;
+  --p-text-2: #645f8a;
+  --p-text-3: #a09ab8;
+  --p-divider: rgba(30,27,58,0.08);
+  --p-primary: #5b4cc9;
+  --p-on-primary: #ffffff;
+  --p-accent: #e8b53a;
+  --p-success: #22c55e;
+  --p-warn: #f59e0b;
+  --p-error: #ef4444;
+  --p-streak: #ff6b4a;
+  --p-illus: #c9c2f0;
+  --p-illus-2: #a89af0;
+}
+
+/* Base reset within .gv */
+.gv * { box-sizing: border-box; }
+.gv {
+  font-family: var(--f-text);
+  color: var(--p-text);
+  background: var(--p-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "cv01";
+}
+.gv button { font-family: inherit; cursor: pointer; }
+.gv .num { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+.gv .display { font-family: var(--f-display); font-weight: 300; letter-spacing: -0.02em; }
+.gv .mono { font-family: var(--f-mono); }
+
+/* Reusable primitives */
+.gv .btn {
+  border: none; border-radius: var(--r-md);
+  font-size: 16px; font-weight: 500;
+  padding: 18px 24px; width: 100%;
+  background: var(--p-primary); color: var(--p-on-primary);
+  transition: transform .15s ease, opacity .15s;
+  letter-spacing: -0.01em;
+}
+.gv .btn:active { transform: scale(0.98); }
+.gv .btn.ghost {
+  background: transparent; color: var(--p-text);
+  border: 1px solid var(--p-divider);
+}
+.gv .btn.subtle {
+  background: var(--p-bg-2); color: var(--p-text);
+}
+
+.gv .card {
+  background: var(--p-surface);
+  border-radius: var(--r-md);
+  padding: var(--s-5);
+  border: 1px solid var(--p-divider);
+}
+.gv .card.flat { background: var(--p-bg-2); border-color: transparent; }
+
+.gv .chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: var(--r-pill);
+  background: var(--p-bg-2); color: var(--p-text-2);
+  font-size: 12px; font-weight: 500; letter-spacing: 0.02em;
+}
+.gv .chip.on { background: var(--p-primary); color: var(--p-on-primary); }
+
+.gv .divider { height: 1px; background: var(--p-divider); }
+
+/* Status bar tweaks for inverted backgrounds */
+.gv-dark { color-scheme: dark; }
+
+/* Animations */
+@keyframes gv-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.35; }
+  50%      { transform: scale(1.08); opacity: 0.6; }
+}
+@keyframes gv-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes gv-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+@keyframes gv-ring-in {
+  from { stroke-dashoffset: 817; }
+}
+@keyframes gv-completion {
+  0%   { opacity: 0; transform: scale(0.92); }
+  60%  { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
+}
