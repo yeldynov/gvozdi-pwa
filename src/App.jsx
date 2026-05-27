@@ -99,7 +99,7 @@ function App({ start = 'welcome' }) {
 
 export default function Root() {
   return (
-    <div className='gv palette-minimalist' style={{ height: '100%' }}>
+    <div className='gv palette-earthy' style={{ height: '100%' }}>
       <App start='welcome' />
     </div>
   )
