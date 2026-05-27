@@ -10,9 +10,9 @@ export default {
       animation: {
         'fade-up': 'gv-fade-up .5s ease both',
         'fade-up-md': 'gv-fade-up .6s ease both',
-        'breathe': 'gv-breathe 8s ease-in-out infinite',
+        breathe: 'gv-breathe 8s ease-in-out infinite',
         'pulse-gv': 'gv-pulse 2s infinite',
-        'completion': 'gv-completion .6s ease both',
+        completion: 'gv-completion .6s ease both',
       },
       colors: {
         bg: 'var(--p-bg)',

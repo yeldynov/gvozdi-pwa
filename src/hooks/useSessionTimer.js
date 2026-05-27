@@ -1,25 +1,31 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react'
 
 export function fmt(sec) {
-  const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
-  return `${m}:${String(s).padStart(2, '0')}`;
+  const m = Math.floor(sec / 60),
+    s = Math.floor(sec % 60)
+  return `${m}:${String(s).padStart(2, '0')}`
 }
 
 export function useSessionTimer(totalSec) {
-  const [running, setRunning] = useState(true);
-  const [elapsed, setElapsed] = useState(0);
-  const ref = useRef(null);
+  const [running, setRunning] = useState(true)
+  const [elapsed, setElapsed] = useState(0)
+  const ref = useRef(null)
   useEffect(() => {
-    if (!running) return;
+    if (!running) return
     ref.current = setInterval(() => {
-      setElapsed(e => Math.min(totalSec, e + 1));
-    }, 1000);
-    return () => clearInterval(ref.current);
-  }, [running, totalSec]);
+      setElapsed((e) => Math.min(totalSec, e + 1))
+    }, 1000)
+    return () => clearInterval(ref.current)
+  }, [running, totalSec])
   return {
-    elapsed, remaining: totalSec - elapsed,
+    elapsed,
+    remaining: totalSec - elapsed,
     progress: elapsed / totalSec,
-    running, toggle: () => setRunning(r => !r),
-    reset: () => { setElapsed(0); setRunning(true); },
-  };
+    running,
+    toggle: () => setRunning((r) => !r),
+    reset: () => {
+      setElapsed(0)
+      setRunning(true)
+    },
+  }
 }

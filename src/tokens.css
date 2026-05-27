@@ -311,22 +311,3 @@
     transform: scale(1);
   }
 }
-
-@layer components {
-  .gv .gv-brand {
-    font-family: var(--f-display);
-    font-weight: 400;
-    font-size: 18px;
-    letter-spacing: 0.02em;
-  }
-}
-
-@layer utilities {
-  .bg-illus-gradient {
-    background: linear-gradient(
-      135deg,
-      var(--p-illus) 0%,
-      var(--p-illus-2) 100%
-    );
-  }
-}
