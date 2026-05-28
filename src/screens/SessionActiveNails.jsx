@@ -104,6 +104,7 @@ export function SessionActiveNails({ nav }) {
   const setCurrentSessionType = useAppStore((s) => s.setCurrentSessionType)
   const sessionDuration = useAppStore((s) => s.sessionDuration)
   const logPractice = useAppStore((s) => s.logPractice)
+  const setPendingCompletion = useAppStore((s) => s.setPendingCompletion)
   const total = sessionDuration * 60
   const t = useSessionTimer(total)
 
@@ -130,6 +131,7 @@ export function SessionActiveNails({ nav }) {
       tension,
       comment,
     })
+    setPendingCompletion(true)
     nav('session-done')
   }
 

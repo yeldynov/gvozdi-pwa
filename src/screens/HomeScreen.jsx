@@ -67,7 +67,20 @@ function fmtRelDate(id) {
   if (d.toDateString() === today.toDateString()) return 'Today'
   if (d.toDateString() === yest.toDateString()) return 'Yesterday'
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
   return `${days[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}`
 }
 
@@ -87,8 +100,14 @@ export function HomeScreen({ nav }) {
   const { user } = useUser()
   const firstName = user?.firstName || user?.fullName?.split(' ')[0] || 'there'
 
-  const { selectedMood, setMood, clearAll, _hasHydrated, practiceLog, setSelectedSession } =
-    useAppStore()
+  const {
+    selectedMood,
+    setMood,
+    clearAll,
+    _hasHydrated,
+    practiceLog,
+    setSelectedSession,
+  } = useAppStore()
   const selectedMoodData = selectedMood
     ? MOOD_OPTS.find((o) => o.k === selectedMood)
     : null
@@ -101,22 +120,27 @@ export function HomeScreen({ nav }) {
   const last7Dates = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today)
     d.setDate(d.getDate() - 6 + i)
-    return d.toISOString().slice(0, 10)
+    return d.toLocaleDateString('en-CA')
   })
   const practiceDates = new Set(practiceLog.map((e) => e.date))
 
   const lastSession = practiceLog.length
-    ? [...practiceLog].sort((a, b) => b.id.localeCompare(a.id))[0]
+    ? [...practiceLog].sort(
+        (a, b) => (Number(b.id) || 0) - (Number(a.id) || 0),
+      )[0]
     : null
 
   const recentSessions = [...practiceLog]
-    .sort((a, b) => b.id.localeCompare(a.id))
+    .sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0))
     .slice(0, 5)
 
-  const handleClearData = () => {
+  const handleClearData = async () => {
+    if (!window.confirm('Clear all stored data? This cannot be undone.')) return
     clearAll()
-    useAppStore.persist.clearStorage()
+    await useAppStore.persist.clearStorage()
   }
+
+  const isDev = true
 
   return (
     <div className='h-full overflow-auto bg-bg'>
@@ -150,7 +174,7 @@ export function HomeScreen({ nav }) {
 
         {/* streak */}
         <div
-          className='card flat flex justify-between items-center'
+          className='flex items-center justify-between card flat'
           style={{ padding: 18, opacity: hasAnyPractice ? 1 : 0.6 }}
         >
           <div>
@@ -234,10 +258,10 @@ export function HomeScreen({ nav }) {
               on the board
             </div>
           </div>
-          <div className='flex items-center justify-between relative mt-1'>
+          <div className='relative flex items-center justify-between mt-1'>
             <div className='text-[12px] opacity-70'>
               {lastSession
-                ? `Last time · ${fmtDuration(lastSession.durationSec)} · ${lastSession.type}`
+                ? `Last time · ${fmtDuration(lastSession.durationSec)} · ${SESSION_TYPE_LABELS[lastSession.type] ?? lastSession.type}`
                 : 'Your first session'}
             </div>
             <button
@@ -325,12 +349,15 @@ export function HomeScreen({ nav }) {
           {recentSessions.length === 0 ? (
             <div className='text-text-3 text-[12px] py-2'>No sessions yet</div>
           ) : (
-            <div className='flex flex-col rounded-md overflow-hidden gap-px bg-divider'>
+            <div className='flex flex-col gap-px overflow-hidden rounded-md bg-divider'>
               {recentSessions.map((entry) => (
                 <button
                   key={entry.id}
-                  onClick={() => { setSelectedSession(entry.id, 'home'); nav('session-detail') }}
-                  className='border-none bg-surface w-full flex items-center gap-3 py-3 px-4 text-left'
+                  onClick={() => {
+                    setSelectedSession(entry.id, 'home')
+                    nav('session-detail')
+                  }}
+                  className='flex items-center w-full gap-3 px-4 py-3 text-left border-none bg-surface'
                 >
                   <div className='flex-none w-[76px]'>
                     <div className='text-text text-[13px] font-medium leading-tight'>
@@ -345,12 +372,18 @@ export function HomeScreen({ nav }) {
                       {fmtDuration(entry.durationSec)}
                     </span>
                     <span className='text-text-3 text-[11px]'>
-                      {' · '}{SESSION_TYPE_LABELS[entry.type] ?? entry.type}
+                      {' · '}
+                      {SESSION_TYPE_LABELS[entry.type] ?? entry.type}
                     </span>
                   </div>
                   <div className='flex items-center gap-[6px] shrink-0'>
                     {entry.goalAchieved === true && (
-                      <span className='text-[11px] font-medium' style={{ color: '#4a8c42' }}>✓</span>
+                      <span
+                        className='text-[11px] font-medium'
+                        style={{ color: '#4a8c42' }}
+                      >
+                        ✓
+                      </span>
                     )}
                     {entry.goalAchieved === false && (
                       <span className='text-text-3 text-[11px]'>—</span>
@@ -364,13 +397,15 @@ export function HomeScreen({ nav }) {
         </div>
 
         {/* dev: clear stored data */}
-        <button
-          onClick={handleClearData}
-          className='flex items-center justify-center gap-[6px] w-full py-[10px] border border-dashed border-divider rounded-md text-text-3 text-[11px] bg-transparent'
-        >
-          <Icons.close size={11} />
-          Clear stored data
-        </button>
+        {isDev && (
+          <button
+            onClick={handleClearData}
+            className='flex items-center justify-center gap-[6px] w-full py-[10px] border border-dashed border-divider rounded-md text-text-3 text-[11px] bg-transparent'
+          >
+            <Icons.close size={11} />
+            Clear stored data
+          </button>
+        )}
       </div>
     </div>
   )

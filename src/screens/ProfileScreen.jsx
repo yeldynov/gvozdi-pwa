@@ -29,12 +29,12 @@ export function ProfileScreen({ nav }) {
     <div className='h-full overflow-auto bg-bg'>
       <div className='pt-[52px] pb-[100px]'>
         {/* header */}
-        <div className='px-6 flex justify-between items-center mb-6'>
-          <button className='border-none bg-transparent text-text-2 p-0 flex'>
+        <div className='flex items-center justify-between px-6 mb-6'>
+          <button className='flex p-0 bg-transparent border-none text-text-2'>
             <Icons.chevron_left size={22} />
           </button>
           <div className='text-text font-medium text-[14px]'>Profile</div>
-          <button className='border-none bg-transparent text-text-2 p-0 flex'>
+          <button className='flex p-0 bg-transparent border-none text-text-2'>
             <Icons.settings size={20} />
           </button>
         </div>
@@ -90,15 +90,15 @@ export function ProfileScreen({ nav }) {
               return (
                 <div key={i} className='card' style={{ padding: 14 }}>
                   <div className='flex items-center gap-3 mb-2'>
-                    <div className='w-8 h-8 rounded-xs bg-bg-2 text-text-2 flex items-center justify-center shrink-0'>
+                    <div className='flex items-center justify-center w-8 h-8 rounded-xs bg-bg-2 text-text-2 shrink-0'>
                       <I size={16} />
                     </div>
                     <div className='flex-1 font-medium text-[14px]'>{g.l}</div>
                     <div className='num text-text-2 text-[13px]'>
-                      <span className='text-text font-medium'>{g.v}</span>/{g.t}
+                      <span className='font-medium text-text'>{g.v}</span>/{g.t}
                     </div>
                   </div>
-                  <div className='h-1 bg-bg-3 rounded-pill overflow-hidden'>
+                  <div className='h-1 overflow-hidden bg-bg-3 rounded-pill'>
                     <div
                       className='h-full bg-success rounded-pill'
                       style={{ width: `${pct * 100}%` }}
@@ -156,7 +156,7 @@ export function ProfileScreen({ nav }) {
           <div className='text-text-2 uppercase mb-[10px] text-[12px] tracking-[0.1em]'>
             Settings
           </div>
-          <div className='bg-surface rounded-md overflow-hidden border border-divider'>
+          <div className='overflow-hidden border rounded-md bg-surface border-divider'>
             {[
               {
                 l: 'Daily reminder',
@@ -193,7 +193,7 @@ export function ProfileScreen({ nav }) {
                   onClick={s.onClick}
                   className={`flex items-center gap-[14px] py-3.5 px-4 ${i < a.length - 1 ? 'border-b border-divider' : ''} ${s.onClick ? 'cursor-pointer' : 'cursor-default'}`}
                 >
-                  <div className='text-text-2 flex'>
+                  <div className='flex text-text-2'>
                     <I size={18} />
                   </div>
                   <div className='flex-1 text-[14px]'>{s.l}</div>
@@ -227,6 +227,45 @@ export function ProfileScreen({ nav }) {
                 </div>
               )
             })}
+          </div>
+        </div>
+
+        {/* install app */}
+        <div className='px-6 pt-6 pb-2'>
+          <div className='text-text-2 uppercase mb-[10px] text-[12px] tracking-[0.1em]'>
+            Install app
+          </div>
+          <div className='flex flex-col gap-2'>
+            <div className='card' style={{ padding: 16 }}>
+              <div className='font-medium text-[13px] mb-3'>
+                Safari · iPhone / iPad
+              </div>
+              <ol className='flex flex-col gap-[8px] m-0 pl-[18px]'>
+                <li className='text-text-2 text-[13px]'>
+                  Tap the Share button (box with arrow up) at the bottom
+                </li>
+                <li className='text-text-2 text-[13px]'>
+                  Scroll down and tap "Add to Home Screen"
+                </li>
+                <li className='text-text-2 text-[13px]'>Tap "Add"</li>
+              </ol>
+            </div>
+            <div className='card' style={{ padding: 16 }}>
+              <div className='font-medium text-[13px] mb-3'>
+                Chrome · Android / Desktop
+              </div>
+              <ol className='flex flex-col gap-[8px] m-0 pl-[18px]'>
+                <li className='text-text-2 text-[13px]'>
+                  Android: tap the menu (three dots) → "Add to Home Screen"
+                </li>
+                <li className='text-text-2 text-[13px]'>
+                  Desktop: click the install icon in the address bar
+                </li>
+                <li className='text-text-2 text-[13px]'>
+                  Confirm by tapping "Add" or "Install"
+                </li>
+              </ol>
+            </div>
           </div>
         </div>
 

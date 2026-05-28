@@ -7,13 +7,17 @@ export function SessionActivePure({ nav }) {
   const total = 360
   const t = useSessionTimer(total)
   const setCurrentSessionType = useAppStore((s) => s.setCurrentSessionType)
+  const setPendingCompletion = useAppStore((s) => s.setPendingCompletion)
 
   useEffect(() => {
     setCurrentSessionType('pure')
   }, [])
 
   useEffect(() => {
-    if (t.remaining === 0) nav('session-done')
+    if (t.remaining === 0) {
+      setPendingCompletion(true)
+      nav('session-done')
+    }
   }, [t.remaining])
 
   return (
@@ -38,6 +42,7 @@ export function SessionActivePure({ nav }) {
         <button
           onClick={(e) => {
             e.stopPropagation()
+            setPendingCompletion(true)
             nav('session-done')
           }}
           className='border-none bg-transparent text-text-3 p-0 text-[13px]'
