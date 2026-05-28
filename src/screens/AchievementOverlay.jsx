@@ -34,7 +34,10 @@ export function AchievementOverlay() {
       onClick={clearPendingAchievement}
     >
       <div className='achievement-badge-pop flex flex-col items-center gap-5 px-10 py-10 text-center'>
-        <div className='text-[11px] uppercase tracking-[0.2em]' style={{ color: 'rgba(255,255,255,0.55)' }}>
+        <div
+          className='text-[11px] uppercase tracking-[0.2em]'
+          style={{ color: 'rgba(255,255,255,0.55)' }}
+        >
           Achievement unlocked
         </div>
         <div
@@ -48,14 +51,23 @@ export function AchievementOverlay() {
           <I size={38} />
         </div>
         <div>
-          <div className='display text-[28px] leading-[1.1] mb-[6px]' style={{ color: 'rgba(255,255,255,0.95)' }}>
+          <div
+            className='display text-[28px] leading-[1.1] mb-[6px]'
+            style={{ color: 'rgba(255,255,255,0.95)' }}
+          >
             {achievement.label}
           </div>
-          <div className='text-[14px]' style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <div
+            className='text-[14px]'
+            style={{ color: 'rgba(255,255,255,0.6)' }}
+          >
             {achievement.desc}
           </div>
         </div>
-        <div className='text-[12px]' style={{ color: 'rgba(255,255,255,0.35)' }}>
+        <div
+          className='text-[12px]'
+          style={{ color: 'rgba(255,255,255,0.35)' }}
+        >
           Tap to continue
         </div>
       </div>
