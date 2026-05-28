@@ -8,11 +8,15 @@ export const useAppStore = create(
       selectedMood: null,
       moodLog: [],
       _hasHydrated: false,
-      setMood: (mood) => set((state) => {
-        const today = new Date().toISOString().slice(0, 10)
-        const log = state.moodLog.filter(e => e.date !== today)
-        return { selectedMood: mood, moodLog: [...log, { date: today, mood }] }
-      }),
+      setMood: (mood) =>
+        set((state) => {
+          const today = new Date().toISOString().slice(0, 10)
+          const log = state.moodLog.filter((e) => e.date !== today)
+          return {
+            selectedMood: mood,
+            moodLog: [...log, { date: today, mood }],
+          }
+        }),
       clearMood: () => set({ selectedMood: null }),
       clearAll: () => set({ selectedMood: null, moodLog: [] }),
       setHasHydrated: (v) => set({ _hasHydrated: v }),
@@ -20,10 +24,13 @@ export const useAppStore = create(
     {
       name: 'gvozdi-state',
       storage: createJSONStorage(() => idbStorage),
-      partialize: (state) => ({ selectedMood: state.selectedMood, moodLog: state.moodLog }),
+      partialize: (state) => ({
+        selectedMood: state.selectedMood,
+        moodLog: state.moodLog,
+      }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true)
       },
-    }
-  )
+    },
+  ),
 )
