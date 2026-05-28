@@ -59,7 +59,9 @@ export const ACHIEVEMENTS = [
 
 export function calcStreak(practiceLog) {
   if (!practiceLog?.length) return 0
-  const uniqueDates = [...new Set(practiceLog.map((e) => e.date))].sort().reverse()
+  const uniqueDates = [...new Set(practiceLog.map((e) => e.date))]
+    .sort()
+    .reverse()
   const today = new Date().toISOString().slice(0, 10)
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
 

@@ -28,8 +28,29 @@ function getGreeting() {
 
 function getFormattedDate() {
   const now = new Date()
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const days = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ]
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
   return `${days[now.getDay()]} · ${months[now.getMonth()]} ${now.getDate()}`
 }
 
@@ -43,8 +64,11 @@ export function HomeScreen({ nav }) {
   const { user } = useUser()
   const firstName = user?.firstName || user?.fullName?.split(' ')[0] || 'there'
 
-  const { selectedMood, setMood, clearAll, _hasHydrated, practiceLog } = useAppStore()
-  const selectedMoodData = selectedMood ? MOOD_OPTS.find((o) => o.k === selectedMood) : null
+  const { selectedMood, setMood, clearAll, _hasHydrated, practiceLog } =
+    useAppStore()
+  const selectedMoodData = selectedMood
+    ? MOOD_OPTS.find((o) => o.k === selectedMood)
+    : null
   const MoodIcon = selectedMoodData?.I || null
 
   const streak = calcStreak(practiceLog)
@@ -60,11 +84,15 @@ export function HomeScreen({ nav }) {
 
   const weeklyBars = last7Dates.map((date) => {
     const dayEntries = practiceLog.filter((e) => e.date === date)
-    return Math.round(dayEntries.reduce((sum, e) => sum + e.durationSec, 0) / 60)
+    return Math.round(
+      dayEntries.reduce((sum, e) => sum + e.durationSec, 0) / 60,
+    )
   })
   const weeklyMax = Math.max(10, ...weeklyBars)
   const weeklyTotal = weeklyBars.reduce((s, v) => s + v, 0)
-  const weeklySessions = practiceLog.filter((e) => last7Dates.includes(e.date)).length
+  const weeklySessions = practiceLog.filter((e) =>
+    last7Dates.includes(e.date),
+  ).length
   const hasWeeklyData = weeklyTotal > 0
 
   const lastSession = practiceLog.length
@@ -96,7 +124,9 @@ export function HomeScreen({ nav }) {
           </div>
           {_hasHydrated && selectedMood && (
             <div className='mt-[10px] animate-fade-up flex items-center gap-[8px]'>
-              {MoodIcon && <MoodIcon size={14} className='text-text-2 shrink-0' />}
+              {MoodIcon && (
+                <MoodIcon size={14} className='text-text-2 shrink-0' />
+              )}
               <div className='display font-light text-text-2 text-[15px] leading-[1.4] italic'>
                 {MOOD_QUOTES[selectedMood]}
               </div>
@@ -114,7 +144,9 @@ export function HomeScreen({ nav }) {
             <div className='flex items-baseline gap-[6px]'>
               <div
                 className='num display text-[38px] leading-none font-light'
-                style={{ color: hasAnyPractice ? 'var(--p-text)' : 'var(--p-text-3)' }}
+                style={{
+                  color: hasAnyPractice ? 'var(--p-text)' : 'var(--p-text-3)',
+                }}
               >
                 {streak}
               </div>
@@ -206,16 +238,29 @@ export function HomeScreen({ nav }) {
         {/* recommended */}
         <div>
           <div className='flex justify-between items-baseline mb-[10px]'>
-            <div className='text-text-2 text-[13px]'>Suggested · short reads</div>
+            <div className='text-text-2 text-[13px]'>
+              Suggested · short reads
+            </div>
             <div className='text-text-3 text-[12px]'>See all</div>
           </div>
           <div className='flex gap-[10px] overflow-x-auto -mr-6 pr-6'>
             {[
-              { t: 'Why the board hurts less on day 12', s: '3 min · essay', tone: 1 },
-              { t: 'A small guide to box breathing', s: '2 min · audio', tone: 2 },
+              {
+                t: 'Why the board hurts less on day 12',
+                s: '3 min · essay',
+                tone: 1,
+              },
+              {
+                t: 'A small guide to box breathing',
+                s: '2 min · audio',
+                tone: 2,
+              },
               { t: 'On not tracking everything', s: '5 min · essay', tone: 1 },
             ].map((c, i) => (
-              <div key={i} className='card min-w-[200px] overflow-hidden border border-divider p-0'>
+              <div
+                key={i}
+                className='card min-w-[200px] overflow-hidden border border-divider p-0'
+              >
                 <div
                   className='h-[100px] relative'
                   style={{
@@ -225,7 +270,11 @@ export function HomeScreen({ nav }) {
                         : 'linear-gradient(135deg, var(--p-bg-3) 0%, var(--p-illus) 100%)',
                   }}
                 >
-                  <svg width='100%' height='100%' className='absolute inset-0 opacity-[0.35]'>
+                  <svg
+                    width='100%'
+                    height='100%'
+                    className='absolute inset-0 opacity-[0.35]'
+                  >
                     {Array.from({ length: 12 }).map((_, k) => (
                       <circle
                         key={k}
@@ -238,7 +287,9 @@ export function HomeScreen({ nav }) {
                   </svg>
                 </div>
                 <div className='p-[14px]'>
-                  <div className='font-medium text-text mb-[6px] text-[14px] leading-[1.3]'>{c.t}</div>
+                  <div className='font-medium text-text mb-[6px] text-[14px] leading-[1.3]'>
+                    {c.t}
+                  </div>
                   <div className='text-text-3 text-[11px]'>{c.s}</div>
                 </div>
               </div>
@@ -267,7 +318,10 @@ export function HomeScreen({ nav }) {
             )}
           </div>
           <div className='divider my-3.5 -mx-[18px]' />
-          <div className='flex justify-between' style={{ opacity: hasWeeklyData ? 1 : 0.45 }}>
+          <div
+            className='flex justify-between'
+            style={{ opacity: hasWeeklyData ? 1 : 0.45 }}
+          >
             <div>
               <div className='text-text-3 text-[11px]'>This week</div>
               <div className='num mt-[2px] text-[18px] font-medium'>
@@ -277,7 +331,9 @@ export function HomeScreen({ nav }) {
             </div>
             <div>
               <div className='text-text-3 text-[11px]'>Sessions</div>
-              <div className='num mt-[2px] text-[18px] font-medium'>{weeklySessions}</div>
+              <div className='num mt-[2px] text-[18px] font-medium'>
+                {weeklySessions}
+              </div>
             </div>
             <div>
               <div className='text-text-3 text-[11px]'>Avg. mood</div>

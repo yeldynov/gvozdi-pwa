@@ -50,7 +50,9 @@ export function ProgressScreen({ nav }) {
 
   const bars = last7.map((date) => {
     const dayEntries = practiceLog.filter((e) => e.date === date)
-    return Math.round(dayEntries.reduce((sum, e) => sum + e.durationSec, 0) / 60)
+    return Math.round(
+      dayEntries.reduce((sum, e) => sum + e.durationSec, 0) / 60,
+    )
   })
   const max = Math.max(10, ...bars)
   const hasChartData = bars.some((v) => v > 0)
@@ -68,7 +70,9 @@ export function ProgressScreen({ nav }) {
 
   const recordedPts = last7
     .map((d, i) =>
-      byDate[d] ? { x: xAt(i), y: yAt(byDate[d]), mood: byDate[d], date: d } : null,
+      byDate[d]
+        ? { x: xAt(i), y: yAt(byDate[d]), mood: byDate[d], date: d }
+        : null,
     )
     .filter(Boolean)
 
@@ -79,9 +83,12 @@ export function ProgressScreen({ nav }) {
           .join(' ')
       : null
 
-  const latestEntry = [...moodLog].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null
+  const latestEntry =
+    [...moodLog].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null
 
-  const earnedMilestones = ACHIEVEMENTS.filter((a) => earnedAchievementIds.includes(a.id)).reverse()
+  const earnedMilestones = ACHIEVEMENTS.filter((a) =>
+    earnedAchievementIds.includes(a.id),
+  ).reverse()
 
   return (
     <div className='h-full overflow-auto bg-bg'>
@@ -109,13 +116,18 @@ export function ProgressScreen({ nav }) {
 
         {/* summary tiles */}
         <div className='grid grid-cols-2 gap-2 mb-5'>
-          <div className='card flat' style={{ padding: 16, opacity: hasChartData ? 1 : 0.5 }}>
+          <div
+            className='card flat'
+            style={{ padding: 16, opacity: hasChartData ? 1 : 0.5 }}
+          >
             <div className='text-text-3 uppercase mb-2 text-[11px] tracking-[0.1em]'>
               Total minutes
             </div>
             <div
               className='num display text-[36px] leading-none font-light'
-              style={{ color: hasChartData ? 'var(--p-text)' : 'var(--p-text-3)' }}
+              style={{
+                color: hasChartData ? 'var(--p-text)' : 'var(--p-text-3)',
+              }}
             >
               {totalMinutes}
             </div>
@@ -123,13 +135,18 @@ export function ProgressScreen({ nav }) {
               {hasChartData ? 'this week' : 'Practice to see data'}
             </div>
           </div>
-          <div className='card flat' style={{ padding: 16, opacity: streak > 0 ? 1 : 0.5 }}>
+          <div
+            className='card flat'
+            style={{ padding: 16, opacity: streak > 0 ? 1 : 0.5 }}
+          >
             <div className='text-text-3 uppercase mb-2 text-[11px] tracking-[0.1em]'>
               Current streak
             </div>
             <div
               className='num display text-[36px] leading-none font-light'
-              style={{ color: streak > 0 ? 'var(--p-streak)' : 'var(--p-text-3)' }}
+              style={{
+                color: streak > 0 ? 'var(--p-streak)' : 'var(--p-text-3)',
+              }}
             >
               {streak}
             </div>
@@ -143,8 +160,12 @@ export function ProgressScreen({ nav }) {
         <div className='card mb-[14px]' style={{ padding: 18 }}>
           <div className='flex justify-between items-baseline mb-[14px]'>
             <div>
-              <div className='font-semibold text-[14px]'>Minutes on the board</div>
-              <div className='text-text-3 mt-[2px] text-[11px]'>Daily practice this week</div>
+              <div className='font-semibold text-[14px]'>
+                Minutes on the board
+              </div>
+              <div className='text-text-3 mt-[2px] text-[11px]'>
+                Daily practice this week
+              </div>
             </div>
             <div className='text-text-3'>
               <Icons.more size={16} />
@@ -171,7 +192,9 @@ export function ProgressScreen({ nav }) {
           <div className='flex justify-between items-baseline mb-[14px]'>
             <div>
               <div className='font-semibold text-[14px]'>How it lands</div>
-              <div className='text-text-3 mt-[2px] text-[11px]'>Mood · last 7 days</div>
+              <div className='text-text-3 mt-[2px] text-[11px]'>
+                Mood · last 7 days
+              </div>
             </div>
             {latestEntry && (
               <span
@@ -283,10 +306,16 @@ export function ProgressScreen({ nav }) {
           </div>
 
           {/* legend */}
-          <div className='flex gap-4 mt-2 flex-wrap' style={{ opacity: hasMoodData ? 1 : 0.4 }}>
+          <div
+            className='flex gap-4 mt-2 flex-wrap'
+            style={{ opacity: hasMoodData ? 1 : 0.4 }}
+          >
             {Object.entries(MOOD_LABEL).map(([k, label]) => (
               <div key={k} className='flex items-center gap-[5px]'>
-                <div className='w-[7px] h-[7px] rounded-full' style={{ background: MOOD_COLOR[k] }} />
+                <div
+                  className='w-[7px] h-[7px] rounded-full'
+                  style={{ background: MOOD_COLOR[k] }}
+                />
                 <span className='text-text-3 text-[10px]'>{label}</span>
               </div>
             ))}
@@ -305,7 +334,10 @@ export function ProgressScreen({ nav }) {
           >
             <div
               className='w-10 h-10 rounded-pill flex items-center justify-center shrink-0'
-              style={{ border: '1.5px solid var(--p-divider)', color: 'var(--p-text-3)' }}
+              style={{
+                border: '1.5px solid var(--p-divider)',
+                color: 'var(--p-text-3)',
+              }}
             >
               <Icons.star size={18} />
             </div>
@@ -334,9 +366,14 @@ export function ProgressScreen({ nav }) {
                   </div>
                   <div className='flex-1'>
                     <div className='font-medium text-[14px]'>{a.label}</div>
-                    <div className='text-text-3 mt-[2px] text-[11px]'>{a.desc}</div>
+                    <div className='text-text-3 mt-[2px] text-[11px]'>
+                      {a.desc}
+                    </div>
                   </div>
-                  <Icons.chevron_right size={16} style={{ color: 'var(--p-text-3)' }} />
+                  <Icons.chevron_right
+                    size={16}
+                    style={{ color: 'var(--p-text-3)' }}
+                  />
                 </div>
               )
             })}

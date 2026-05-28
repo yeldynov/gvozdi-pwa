@@ -69,8 +69,21 @@ export function ProfileScreen({ nav }) {
           </div>
           <div className='flex flex-col gap-2'>
             {[
-              { l: 'Daily 6-min board', v: Math.min(practiceLog.length, 30), t: 30, I: Icons.nails },
-              { l: 'Box breathing 3×/week', v: Math.min(practiceLog.filter(e => e.type === 'breath').length, 3), t: 3, I: Icons.drop },
+              {
+                l: 'Daily 6-min board',
+                v: Math.min(practiceLog.length, 30),
+                t: 30,
+                I: Icons.nails,
+              },
+              {
+                l: 'Box breathing 3×/week',
+                v: Math.min(
+                  practiceLog.filter((e) => e.type === 'breath').length,
+                  3,
+                ),
+                t: 3,
+                I: Icons.drop,
+              },
             ].map((g, i) => {
               const I = g.I
               const pct = g.v / g.t
@@ -103,7 +116,9 @@ export function ProfileScreen({ nav }) {
             <div className='text-text-2 uppercase text-[12px] tracking-[0.1em]'>
               Achievements
             </div>
-            <div className='text-text-3 text-[12px]'>{earnedAchievementIds.length}/{ACHIEVEMENTS.length}</div>
+            <div className='text-text-3 text-[12px]'>
+              {earnedAchievementIds.length}/{ACHIEVEMENTS.length}
+            </div>
           </div>
           <div className='grid grid-cols-4 gap-3'>
             {ACHIEVEMENTS.map((a) => {
