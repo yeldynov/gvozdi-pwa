@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import Icons from '../icons'
+import { useAppStore } from '../store/useAppStore'
 
 export function SessionSetupScreen({ nav }) {
   const [dur, setDur] = useState(6)
   const options = [3, 6, 10, 15]
+  const setSessionDuration = useAppStore((s) => s.setSessionDuration)
 
   return (
-    <div className='h-full flex flex-col bg-bg pt-14 px-6 pb-8'>
+    <div className='h-full flex flex-col bg-bg pt-14 px-6 pb-[100px]'>
       <div className='flex justify-between items-center mb-8'>
         <button
           onClick={() => nav('home')}
@@ -20,7 +22,7 @@ export function SessionSetupScreen({ nav }) {
         </button>
       </div>
 
-      <div className='flex-1 flex flex-col gap-7'>
+      <div className='flex-1 overflow-y-auto flex flex-col gap-7'>
         <div>
           <div className='text-text-3 uppercase mb-2 text-[12px] tracking-[0.14em]'>
             Nail board
@@ -102,7 +104,10 @@ export function SessionSetupScreen({ nav }) {
 
       <button
         className='btn flex items-center justify-center gap-2'
-        onClick={() => nav('session-active')}
+        onClick={() => {
+          setSessionDuration(dur)
+          nav('session-active')
+        }}
       >
         <Icons.play size={16} /> Begin · {dur} min
       </button>

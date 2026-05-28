@@ -10,6 +10,10 @@ export const useAppStore = create(
       moodLog: [],
       practiceLog: [],
       currentSessionType: null,
+      sessionDuration: 6,
+      sessionSaved: false,
+      selectedSessionId: null,
+      sessionDetailBack: 'home',
       earnedAchievementIds: [],
       pendingAchievement: null,
       _hasHydrated: false,
@@ -28,10 +32,21 @@ export const useAppStore = create(
 
       setCurrentSessionType: (type) => set({ currentSessionType: type }),
 
-      logPractice: ({ type, durationSec }) =>
+      setSessionDuration: (dur) => set({ sessionDuration: dur }),
+
+      logPractice: ({ type, durationSec, goalSec, goalAchieved, tension, comment }) =>
         set((state) => {
           const date = new Date().toISOString().slice(0, 10)
-          const entry = { id: Date.now().toString(), date, type, durationSec }
+          const entry = {
+            id: Date.now().toString(),
+            date,
+            type,
+            durationSec,
+            ...(goalSec !== undefined && { goalSec }),
+            ...(goalAchieved !== undefined && { goalAchieved }),
+            ...(tension && { tension }),
+            ...(comment && { comment }),
+          }
           const newPracticeLog = [...state.practiceLog, entry]
 
           const newEarnedIds = calcEarnedAchievementIds(newPracticeLog)
@@ -48,8 +63,22 @@ export const useAppStore = create(
               newlyEarned.length > 0
                 ? newlyEarned[newlyEarned.length - 1]
                 : null,
+            sessionSaved: true,
           }
         }),
+
+      consumeSessionSaved: () => set({ sessionSaved: false }),
+
+      updateLastEntryPostMood: (postMood) =>
+        set((state) => {
+          if (!state.practiceLog.length) return {}
+          const log = [...state.practiceLog]
+          log[log.length - 1] = { ...log[log.length - 1], postMood }
+          return { practiceLog: log }
+        }),
+
+      setSelectedSession: (id, back = 'home') =>
+        set({ selectedSessionId: id, sessionDetailBack: back }),
 
       clearPendingAchievement: () => set({ pendingAchievement: null }),
 

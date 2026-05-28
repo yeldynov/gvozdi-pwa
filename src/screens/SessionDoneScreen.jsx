@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import Icons from '../icons'
 import { useAppStore } from '../store/useAppStore'
 import { calcStreak } from '../store/achievements'
+import { fmt } from '../hooks/useSessionTimer'
 
 export function SessionDoneScreen({ nav }) {
   const [mood, setMood] = useState('settled')
@@ -12,15 +13,22 @@ export function SessionDoneScreen({ nav }) {
     { k: 'open', l: 'Open' },
   ]
 
-  const { practiceLog, currentSessionType, logPractice } = useAppStore()
+  const { practiceLog, currentSessionType, logPractice, sessionDuration, sessionSaved, consumeSessionSaved, updateLastEntryPostMood } = useAppStore()
   const hasLogged = useRef(false)
 
   useEffect(() => {
     if (!hasLogged.current) {
       hasLogged.current = true
-      logPractice({ type: currentSessionType ?? 'board', durationSec: 360 })
+      if (sessionSaved) {
+        consumeSessionSaved()
+      } else {
+        logPractice({ type: currentSessionType ?? 'board', durationSec: sessionDuration * 60 })
+      }
     }
   }, [])
+
+  const lastEntry = practiceLog[practiceLog.length - 1]
+  const displayDurationSec = lastEntry?.durationSec ?? sessionDuration * 60
 
   const streak = calcStreak(practiceLog)
 
@@ -41,7 +49,7 @@ export function SessionDoneScreen({ nav }) {
             Session {practiceLog.length} · complete
           </div>
           <div className='display text-[30px] leading-[1.1]'>
-            Six minutes.
+            {Math.floor(displayDurationSec / 60)} minutes.
             <br />
             Well done.
           </div>
@@ -51,7 +59,7 @@ export function SessionDoneScreen({ nav }) {
         <div className='flex justify-around border-t border-b border-divider py-5'>
           <div className='text-center'>
             <div className='num display text-[32px] font-light leading-none'>
-              6:00
+              {fmt(displayDurationSec)}
             </div>
             <div className='text-text-3 uppercase mt-[6px] text-[10px] tracking-[0.1em]'>
               duration
@@ -88,7 +96,7 @@ export function SessionDoneScreen({ nav }) {
               return (
                 <button
                   key={m.k}
-                  onClick={() => setMood(m.k)}
+                  onClick={() => { setMood(m.k); updateLastEntryPostMood(m.k) }}
                   className={`flex-1 rounded-pill font-medium transition-all duration-150 py-[10px] px-1 text-[13px] ${on ? 'bg-primary text-on-primary border-primary' : 'bg-transparent text-text border-divider'} border`}
                 >
                   {m.l}

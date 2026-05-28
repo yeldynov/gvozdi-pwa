@@ -18,6 +18,14 @@ const MOOD_LABEL = {
   open: 'Open',
 }
 
+const POST_LEVEL = {
+  intense: 0, tense: 0,
+  mixed: 1,
+  mild: 2,
+  settled: 2, easy: 3,
+  open: 3,
+}
+
 const ICON_MAP = {
   flame: Icons.flame,
   shield: Icons.shield,
@@ -63,6 +71,17 @@ export function ProgressScreen({ nav }) {
   const byDate = Object.fromEntries(moodLog.map((e) => [e.date, e.mood]))
   const hasMoodData = moodLog.length > 0
 
+  const postAllByDate = {}
+  for (const entry of practiceLog) {
+    const val = entry.tension ?? entry.postMood
+    if (val != null && last7.includes(entry.date)) {
+      if (!postAllByDate[entry.date]) postAllByDate[entry.date] = []
+      postAllByDate[entry.date].push(POST_LEVEL[val] ?? 1)
+    }
+  }
+  const hasPostData = Object.keys(postAllByDate).length > 0
+  const hasCorrData = hasMoodData || hasPostData
+
   const dayLabel = (iso) => {
     const d = new Date(iso + 'T12:00:00')
     return d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2)
@@ -76,9 +95,25 @@ export function ProgressScreen({ nav }) {
     )
     .filter(Boolean)
 
+  const postAvgPts = last7
+    .map((d, i) => {
+      const levels = postAllByDate[d]
+      if (!levels?.length) return null
+      const avg = levels.reduce((s, v) => s + v, 0) / levels.length
+      return { x: xAt(i), y: PT + ((3 - avg) / 3) * H, date: d }
+    })
+    .filter(Boolean)
+
   const linePath =
     recordedPts.length > 1
       ? recordedPts
+          .map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+          .join(' ')
+      : null
+
+  const postLinePath =
+    postAvgPts.length > 1
+      ? postAvgPts
           .map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
           .join(' ')
       : null
@@ -187,13 +222,13 @@ export function ProgressScreen({ nav }) {
           </div>
         </div>
 
-        {/* mood chart */}
+        {/* mood + tension correlation chart */}
         <div className='card mb-[14px]' style={{ padding: 18 }}>
           <div className='flex justify-between items-baseline mb-[14px]'>
             <div>
-              <div className='font-semibold text-[14px]'>How it lands</div>
+              <div className='font-semibold text-[14px]'>Mood & tension</div>
               <div className='text-text-3 mt-[2px] text-[11px]'>
-                Mood · last 7 days
+                Pre-session mood vs. post-session tension
               </div>
             </div>
             {latestEntry && (
@@ -213,7 +248,7 @@ export function ProgressScreen({ nav }) {
               height='120'
               preserveAspectRatio='none'
               className='overflow-visible'
-              style={{ opacity: hasMoodData ? 1 : 0.3 }}
+              style={{ opacity: hasCorrData ? 1 : 0.3 }}
             >
               {/* guide lines */}
               {[0, 1, 2, 3].map((level) => {
@@ -232,7 +267,7 @@ export function ProgressScreen({ nav }) {
                 )
               })}
 
-              {/* connecting line */}
+              {/* pre-session mood connecting line */}
               {linePath && (
                 <path
                   d={linePath}
@@ -244,7 +279,20 @@ export function ProgressScreen({ nav }) {
                 />
               )}
 
-              {/* dots */}
+              {/* post-session tension connecting line */}
+              {postLinePath && (
+                <path
+                  d={postLinePath}
+                  fill='none'
+                  stroke='var(--p-primary)'
+                  strokeWidth='1.5'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeDasharray='3 3'
+                />
+              )}
+
+              {/* pre-session mood dots */}
               {last7.map((d, i) => {
                 const mood = byDate[d]
                 const x = xAt(i)
@@ -276,6 +324,48 @@ export function ProgressScreen({ nav }) {
                 )
               })}
 
+              {/* post-session dots per day: spread + vertical range line */}
+              {last7.map((d, i) => {
+                const levels = postAllByDate[d]
+                if (!levels?.length) return null
+                const x = xAt(i)
+                const SPREAD = 7
+                const ys = levels.map((lv) => PT + ((3 - lv) / 3) * H)
+                const minY = Math.min(...ys)
+                const maxY = Math.max(...ys)
+                return (
+                  <g key={d}>
+                    {levels.length > 1 && (
+                      <line
+                        x1={x}
+                        y1={minY}
+                        x2={x}
+                        y2={maxY}
+                        stroke='var(--p-primary)'
+                        strokeWidth='1'
+                        opacity='0.3'
+                      />
+                    )}
+                    {levels.map((lv, j) => {
+                      const offset = levels.length === 1 ? 0 : (j - (levels.length - 1) / 2) * SPREAD
+                      const y = PT + ((3 - lv) / 3) * H
+                      return (
+                        <rect
+                          key={j}
+                          x={x + offset - 4}
+                          y={y - 4}
+                          width='8'
+                          height='8'
+                          transform={`rotate(45, ${x + offset}, ${y})`}
+                          fill='var(--p-primary)'
+                          opacity='0.85'
+                        />
+                      )
+                    })}
+                  </g>
+                )
+              })}
+
               {/* day labels */}
               {last7.map((d, i) => (
                 <text
@@ -291,7 +381,7 @@ export function ProgressScreen({ nav }) {
                 </text>
               ))}
             </svg>
-            {!hasMoodData && (
+            {!hasCorrData && (
               <div
                 className='absolute flex items-center justify-center'
                 style={{ inset: '0 0 24px 0' }}
@@ -299,26 +389,25 @@ export function ProgressScreen({ nav }) {
                 <div className='text-text-3 text-[12px] text-center leading-[1.6]'>
                   Select your mood on the home screen
                   <br />
-                  to track how practice lands
+                  and complete a session to see trends
                 </div>
               </div>
             )}
           </div>
 
           {/* legend */}
-          <div
-            className='flex gap-4 mt-2 flex-wrap'
-            style={{ opacity: hasMoodData ? 1 : 0.4 }}
-          >
-            {Object.entries(MOOD_LABEL).map(([k, label]) => (
-              <div key={k} className='flex items-center gap-[5px]'>
-                <div
-                  className='w-[7px] h-[7px] rounded-full'
-                  style={{ background: MOOD_COLOR[k] }}
-                />
-                <span className='text-text-3 text-[10px]'>{label}</span>
-              </div>
-            ))}
+          <div className='flex gap-4 mt-3' style={{ opacity: hasCorrData ? 1 : 0.4 }}>
+            <div className='flex items-center gap-[5px]'>
+              <div className='w-[7px] h-[7px] rounded-full bg-text-3' />
+              <span className='text-text-3 text-[10px]'>Pre-session mood</span>
+            </div>
+            <div className='flex items-center gap-[5px]'>
+              <div
+                className='w-[7px] h-[7px] rotate-45'
+                style={{ background: 'var(--p-primary)' }}
+              />
+              <span className='text-text-3 text-[10px]'>Post-session tension</span>
+            </div>
           </div>
         </div>
 

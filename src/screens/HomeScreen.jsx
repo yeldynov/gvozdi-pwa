@@ -1,6 +1,5 @@
 import { useUser } from '@clerk/react'
 import Icons from '../icons'
-import { WeeklyChart } from './WeeklyChart'
 import { useAppStore } from '../store/useAppStore'
 import { calcStreak } from '../store/achievements'
 
@@ -60,11 +59,35 @@ function fmtDuration(sec) {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
+function fmtRelDate(id) {
+  const d = new Date(parseInt(id))
+  const today = new Date()
+  const yest = new Date(today)
+  yest.setDate(today.getDate() - 1)
+  if (d.toDateString() === today.toDateString()) return 'Today'
+  if (d.toDateString() === yest.toDateString()) return 'Yesterday'
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return `${days[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}`
+}
+
+function fmtTime(id) {
+  const d = new Date(parseInt(id))
+  return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+const SESSION_TYPE_LABELS = {
+  nails: 'Nail board',
+  board: 'Nail board',
+  breath: 'Breath ring',
+  pure: 'Pure focus',
+}
+
 export function HomeScreen({ nav }) {
   const { user } = useUser()
   const firstName = user?.firstName || user?.fullName?.split(' ')[0] || 'there'
 
-  const { selectedMood, setMood, clearAll, _hasHydrated, practiceLog } =
+  const { selectedMood, setMood, clearAll, _hasHydrated, practiceLog, setSelectedSession } =
     useAppStore()
   const selectedMoodData = selectedMood
     ? MOOD_OPTS.find((o) => o.k === selectedMood)
@@ -82,22 +105,13 @@ export function HomeScreen({ nav }) {
   })
   const practiceDates = new Set(practiceLog.map((e) => e.date))
 
-  const weeklyBars = last7Dates.map((date) => {
-    const dayEntries = practiceLog.filter((e) => e.date === date)
-    return Math.round(
-      dayEntries.reduce((sum, e) => sum + e.durationSec, 0) / 60,
-    )
-  })
-  const weeklyMax = Math.max(10, ...weeklyBars)
-  const weeklyTotal = weeklyBars.reduce((s, v) => s + v, 0)
-  const weeklySessions = practiceLog.filter((e) =>
-    last7Dates.includes(e.date),
-  ).length
-  const hasWeeklyData = weeklyTotal > 0
-
   const lastSession = practiceLog.length
     ? [...practiceLog].sort((a, b) => b.id.localeCompare(a.id))[0]
     : null
+
+  const recentSessions = [...practiceLog]
+    .sort((a, b) => b.id.localeCompare(a.id))
+    .slice(0, 5)
 
   const handleClearData = () => {
     clearAll()
@@ -297,51 +311,56 @@ export function HomeScreen({ nav }) {
           </div>
         </div>
 
-        {/* this week */}
-        <div className='card flat' style={{ padding: 18 }}>
-          <div className='flex justify-between items-baseline mb-[14px]'>
-            <div className='text-text-2 text-[13px]'>This week</div>
-            <div className='text-text-3 text-[11px]'>minutes per day</div>
+        {/* recent sessions */}
+        <div>
+          <div className='flex justify-between items-baseline mb-[10px]'>
+            <div className='text-text-2 text-[13px]'>Recent sessions</div>
+            <button
+              onClick={() => nav('sessions-list')}
+              className='border-none bg-transparent p-0 text-text-3 text-[12px]'
+            >
+              Show all
+            </button>
           </div>
-          <div className='relative'>
-            <div style={{ opacity: hasWeeklyData ? 1 : 0.35 }}>
-              <WeeklyChart data={weeklyBars} max={weeklyMax} />
+          {recentSessions.length === 0 ? (
+            <div className='text-text-3 text-[12px] py-2'>No sessions yet</div>
+          ) : (
+            <div className='flex flex-col rounded-md overflow-hidden gap-px bg-divider'>
+              {recentSessions.map((entry) => (
+                <button
+                  key={entry.id}
+                  onClick={() => { setSelectedSession(entry.id, 'home'); nav('session-detail') }}
+                  className='border-none bg-surface w-full flex items-center gap-3 py-3 px-4 text-left'
+                >
+                  <div className='flex-none w-[76px]'>
+                    <div className='text-text text-[13px] font-medium leading-tight'>
+                      {fmtRelDate(entry.id)}
+                    </div>
+                    <div className='text-text-3 text-[11px] mt-[2px]'>
+                      {fmtTime(entry.id)}
+                    </div>
+                  </div>
+                  <div className='flex-1 min-w-0'>
+                    <span className='num text-text text-[13px] font-medium'>
+                      {fmtDuration(entry.durationSec)}
+                    </span>
+                    <span className='text-text-3 text-[11px]'>
+                      {' · '}{SESSION_TYPE_LABELS[entry.type] ?? entry.type}
+                    </span>
+                  </div>
+                  <div className='flex items-center gap-[6px] shrink-0'>
+                    {entry.goalAchieved === true && (
+                      <span className='text-[11px] font-medium' style={{ color: '#4a8c42' }}>✓</span>
+                    )}
+                    {entry.goalAchieved === false && (
+                      <span className='text-text-3 text-[11px]'>—</span>
+                    )}
+                    <Icons.chevron_right size={13} />
+                  </div>
+                </button>
+              ))}
             </div>
-            {!hasWeeklyData && (
-              <div className='absolute inset-0 flex items-center justify-center'>
-                <div className='text-text-3 text-[12px] text-center leading-[1.6]'>
-                  Complete a session
-                  <br />
-                  to see your activity
-                </div>
-              </div>
-            )}
-          </div>
-          <div className='divider my-3.5 -mx-[18px]' />
-          <div
-            className='flex justify-between'
-            style={{ opacity: hasWeeklyData ? 1 : 0.45 }}
-          >
-            <div>
-              <div className='text-text-3 text-[11px]'>This week</div>
-              <div className='num mt-[2px] text-[18px] font-medium'>
-                {weeklyTotal}{' '}
-                <span className='text-text-3 text-[11px] font-normal'>min</span>
-              </div>
-            </div>
-            <div>
-              <div className='text-text-3 text-[11px]'>Sessions</div>
-              <div className='num mt-[2px] text-[18px] font-medium'>
-                {weeklySessions}
-              </div>
-            </div>
-            <div>
-              <div className='text-text-3 text-[11px]'>Avg. mood</div>
-              <div className='font-medium mt-1 text-text-3 text-[14px]'>
-                {hasWeeklyData ? '—' : '—'}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* dev: clear stored data */}
