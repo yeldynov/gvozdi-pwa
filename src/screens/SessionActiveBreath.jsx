@@ -1,13 +1,19 @@
 import { useEffect } from 'react'
 import Icons from '../icons'
 import { useSessionTimer, fmt } from '../hooks/useSessionTimer'
+import { useAppStore } from '../store/useAppStore'
 
 export function SessionActiveBreath({ nav }) {
   const total = 360
   const t = useSessionTimer(total)
+  const setCurrentSessionType = useAppStore((s) => s.setCurrentSessionType)
   const R = 124,
     C = 2 * Math.PI * R
   const offset = C * (1 - t.progress)
+
+  useEffect(() => {
+    setCurrentSessionType('breath')
+  }, [])
 
   useEffect(() => {
     if (t.remaining === 0) nav('session-done')

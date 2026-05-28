@@ -13,6 +13,7 @@ import { SessionActiveBreath } from './screens/SessionActiveBreath'
 import { SessionActivePure } from './screens/SessionActivePure'
 import { SessionActiveBoard } from './screens/SessionActiveBoard'
 import { SessionDoneScreen } from './screens/SessionDoneScreen'
+import { AchievementOverlay } from './screens/AchievementOverlay'
 import './globals.css'
 
 function BottomNav({ tab, setTab }) {
@@ -106,6 +107,7 @@ function App() {
       bottomNav={isTab ? <BottomNav tab={screen} setTab={setScreen} /> : null}
     >
       {screens[screen] || <HomeScreen nav={nav} />}
+      <AchievementOverlay />
     </PWAFrame>
   )
 }

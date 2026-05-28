@@ -1,9 +1,22 @@
 import { useUser, useClerk } from '@clerk/react'
 import Icons from '../icons'
+import { useAppStore } from '../store/useAppStore'
+import { ACHIEVEMENTS, calcStreak } from '../store/achievements'
+
+const ICON_MAP = {
+  flame: Icons.flame,
+  shield: Icons.shield,
+  star: Icons.star,
+  spark: Icons.spark,
+  check: Icons.check,
+}
 
 export function ProfileScreen({ nav }) {
   const { user } = useUser()
   const { signOut } = useClerk()
+  const { practiceLog, earnedAchievementIds } = useAppStore()
+
+  const streak = calcStreak(practiceLog)
 
   const name =
     user?.fullName ||
@@ -11,6 +24,7 @@ export function ProfileScreen({ nav }) {
     user?.emailAddresses?.[0]?.emailAddress ||
     'User'
   const initial = name.charAt(0).toUpperCase()
+
   return (
     <div className='h-full overflow-auto bg-bg'>
       <div className='pt-[52px] pb-[100px]'>
@@ -36,8 +50,14 @@ export function ProfileScreen({ nav }) {
           </div>
           <div className='flex justify-center gap-[6px] mt-3'>
             <span className='chip'>Level 3 · Practitioner</span>
-            <span className='chip bg-streak text-on-primary'>
-              12 day streak
+            <span
+              className='chip'
+              style={{
+                background: streak > 0 ? 'var(--p-streak)' : 'var(--p-bg-3)',
+                color: streak > 0 ? 'var(--p-on-primary)' : 'var(--p-text-3)',
+              }}
+            >
+              {streak > 0 ? `${streak} day streak` : 'No streak yet'}
             </span>
           </div>
         </div>
@@ -49,8 +69,8 @@ export function ProfileScreen({ nav }) {
           </div>
           <div className='flex flex-col gap-2'>
             {[
-              { l: 'Daily 6-min board', v: 12, t: 30, I: Icons.nails },
-              { l: 'Box breathing 3×/week', v: 2, t: 3, I: Icons.drop },
+              { l: 'Daily 6-min board', v: Math.min(practiceLog.length, 30), t: 30, I: Icons.nails },
+              { l: 'Box breathing 3×/week', v: Math.min(practiceLog.filter(e => e.type === 'breath').length, 3), t: 3, I: Icons.drop },
             ].map((g, i) => {
               const I = g.I
               const pct = g.v / g.t
@@ -83,58 +103,32 @@ export function ProfileScreen({ nav }) {
             <div className='text-text-2 uppercase text-[12px] tracking-[0.1em]'>
               Achievements
             </div>
-            <div className='text-text-3 text-[12px]'>View all</div>
+            <div className='text-text-3 text-[12px]'>{earnedAchievementIds.length}/{ACHIEVEMENTS.length}</div>
           </div>
-          <div className='grid grid-cols-4 gap-2'>
-            {[
-              {
-                I: Icons.flame,
-                l: 'Streak 7',
-                unlocked: true,
-                ring: 'var(--p-streak)',
-              },
-              {
-                I: Icons.shield,
-                l: '10 hours',
-                unlocked: true,
-                ring: 'var(--p-success)',
-              },
-              {
-                I: Icons.star,
-                l: 'Early bird',
-                unlocked: true,
-                ring: 'var(--p-accent)',
-              },
-              {
-                I: Icons.lock,
-                l: 'Locked',
-                unlocked: false,
-                ring: 'var(--p-divider)',
-              },
-            ].map((a, i) => {
-              const I = a.I
+          <div className='grid grid-cols-4 gap-3'>
+            {ACHIEVEMENTS.map((a) => {
+              const unlocked = earnedAchievementIds.includes(a.id)
+              const I = ICON_MAP[a.icon] || Icons.star
               return (
-                <div key={i} className='text-center'>
+                <div key={a.id} className='text-center'>
                   <div
                     className='w-14 h-14 mx-auto mb-[6px] rounded-pill flex items-center justify-center'
                     style={{
                       border: '1.5px solid ' + a.ring,
-                      background: a.unlocked
-                        ? 'var(--p-surface)'
-                        : 'transparent',
-                      color: a.unlocked ? a.ring : 'var(--p-text-3)',
-                      opacity: a.unlocked ? 1 : 0.5,
+                      background: unlocked ? 'var(--p-surface)' : 'transparent',
+                      color: unlocked ? a.ring : 'var(--p-text-3)',
+                      opacity: unlocked ? 1 : 0.4,
                     }}
                   >
                     <I size={22} />
                   </div>
                   <div
-                    className='text-[11px]'
+                    className='text-[11px] leading-[1.3]'
                     style={{
-                      color: a.unlocked ? 'var(--p-text-2)' : 'var(--p-text-3)',
+                      color: unlocked ? 'var(--p-text-2)' : 'var(--p-text-3)',
                     }}
                   >
-                    {a.l}
+                    {a.label}
                   </div>
                 </div>
               )

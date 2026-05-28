@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Icons from '../icons'
+import { useAppStore } from '../store/useAppStore'
+import { calcStreak } from '../store/achievements'
 
 export function SessionDoneScreen({ nav }) {
   const [mood, setMood] = useState('settled')
@@ -9,6 +11,18 @@ export function SessionDoneScreen({ nav }) {
     { k: 'settled', l: 'Settled' },
     { k: 'open', l: 'Open' },
   ]
+
+  const { practiceLog, currentSessionType, logPractice } = useAppStore()
+  const hasLogged = useRef(false)
+
+  useEffect(() => {
+    if (!hasLogged.current) {
+      hasLogged.current = true
+      logPractice({ type: currentSessionType ?? 'board', durationSec: 360 })
+    }
+  }, [])
+
+  const streak = calcStreak(practiceLog)
 
   return (
     <div className='h-full flex flex-col bg-bg pt-[60px] px-6 pb-7 animate-completion'>
@@ -24,7 +38,7 @@ export function SessionDoneScreen({ nav }) {
 
         <div className='text-center mb-7'>
           <div className='text-text-3 uppercase mb-2 text-[12px] tracking-[0.14em]'>
-            Session 14 · complete
+            Session {practiceLog.length} · complete
           </div>
           <div className='display text-[30px] leading-[1.1]'>
             Six minutes.
@@ -46,7 +60,7 @@ export function SessionDoneScreen({ nav }) {
           <div className='w-[1px] bg-divider' />
           <div className='text-center'>
             <div className='num display text-[32px] font-light leading-none'>
-              13
+              {streak}
             </div>
             <div className='text-text-3 uppercase mt-[6px] text-[10px] tracking-[0.1em]'>
               day streak

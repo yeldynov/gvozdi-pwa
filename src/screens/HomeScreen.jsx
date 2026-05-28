@@ -2,6 +2,7 @@ import { useUser } from '@clerk/react'
 import Icons from '../icons'
 import { WeeklyChart } from './WeeklyChart'
 import { useAppStore } from '../store/useAppStore'
+import { calcStreak } from '../store/achievements'
 
 const MOOD_OPTS = [
   { k: 'tense', label: 'Tense', I: Icons.spark },
@@ -27,41 +28,48 @@ function getGreeting() {
 
 function getFormattedDate() {
   const now = new Date()
-  const days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ]
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ]
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   return `${days[now.getDay()]} · ${months[now.getMonth()]} ${now.getDate()}`
+}
+
+function fmtDuration(sec) {
+  const m = Math.floor(sec / 60)
+  const s = sec % 60
+  return `${m}:${String(s).padStart(2, '0')}`
 }
 
 export function HomeScreen({ nav }) {
   const { user } = useUser()
   const firstName = user?.firstName || user?.fullName?.split(' ')[0] || 'there'
 
-  const { selectedMood, setMood, clearAll, _hasHydrated } = useAppStore()
-  const selectedMoodData = selectedMood
-    ? MOOD_OPTS.find((o) => o.k === selectedMood)
-    : null
+  const { selectedMood, setMood, clearAll, _hasHydrated, practiceLog } = useAppStore()
+  const selectedMoodData = selectedMood ? MOOD_OPTS.find((o) => o.k === selectedMood) : null
   const MoodIcon = selectedMoodData?.I || null
+
+  const streak = calcStreak(practiceLog)
+  const hasAnyPractice = practiceLog.length > 0
+
+  const today = new Date()
+  const last7Dates = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today)
+    d.setDate(d.getDate() - 6 + i)
+    return d.toISOString().slice(0, 10)
+  })
+  const practiceDates = new Set(practiceLog.map((e) => e.date))
+
+  const weeklyBars = last7Dates.map((date) => {
+    const dayEntries = practiceLog.filter((e) => e.date === date)
+    return Math.round(dayEntries.reduce((sum, e) => sum + e.durationSec, 0) / 60)
+  })
+  const weeklyMax = Math.max(10, ...weeklyBars)
+  const weeklyTotal = weeklyBars.reduce((s, v) => s + v, 0)
+  const weeklySessions = practiceLog.filter((e) => last7Dates.includes(e.date)).length
+  const hasWeeklyData = weeklyTotal > 0
+
+  const lastSession = practiceLog.length
+    ? [...practiceLog].sort((a, b) => b.id.localeCompare(a.id))[0]
+    : null
 
   const handleClearData = () => {
     clearAll()
@@ -88,9 +96,7 @@ export function HomeScreen({ nav }) {
           </div>
           {_hasHydrated && selectedMood && (
             <div className='mt-[10px] animate-fade-up flex items-center gap-[8px]'>
-              {MoodIcon && (
-                <MoodIcon size={14} className='text-text-2 shrink-0' />
-              )}
+              {MoodIcon && <MoodIcon size={14} className='text-text-2 shrink-0' />}
               <div className='display font-light text-text-2 text-[15px] leading-[1.4] italic'>
                 {MOOD_QUOTES[selectedMood]}
               </div>
@@ -101,22 +107,30 @@ export function HomeScreen({ nav }) {
         {/* streak */}
         <div
           className='card flat flex justify-between items-center'
-          style={{ padding: 18 }}
+          style={{ padding: 18, opacity: hasAnyPractice ? 1 : 0.6 }}
         >
           <div>
             <div className='text-text-2 mb-1 text-[12px]'>Current streak</div>
             <div className='flex items-baseline gap-[6px]'>
-              <div className='num display text-text text-[38px] leading-none font-light'>
-                12
+              <div
+                className='num display text-[38px] leading-none font-light'
+                style={{ color: hasAnyPractice ? 'var(--p-text)' : 'var(--p-text-3)' }}
+              >
+                {streak}
               </div>
               <div className='text-text-2 text-[13px]'>days</div>
             </div>
+            {!hasAnyPractice && (
+              <div className='text-text-3 text-[11px] mt-1'>
+                Practice today to start
+              </div>
+            )}
           </div>
           <div className='flex gap-1'>
-            {Array.from({ length: 7 }).map((_, i) => (
+            {last7Dates.map((date, i) => (
               <div
                 key={i}
-                className={`w-2 h-7 rounded-[4px] ${i < 5 ? 'bg-streak' : 'bg-bg-3'}`}
+                className={`w-2 h-7 rounded-[4px] ${practiceDates.has(date) ? 'bg-streak' : 'bg-bg-3'}`}
               />
             ))}
           </div>
@@ -176,7 +190,9 @@ export function HomeScreen({ nav }) {
           </div>
           <div className='flex items-center justify-between relative mt-1'>
             <div className='text-[12px] opacity-70'>
-              Last time · 5:30 · settled
+              {lastSession
+                ? `Last time · ${fmtDuration(lastSession.durationSec)} · ${lastSession.type}`
+                : 'Your first session'}
             </div>
             <button
               onClick={() => nav('session-setup')}
@@ -190,29 +206,16 @@ export function HomeScreen({ nav }) {
         {/* recommended */}
         <div>
           <div className='flex justify-between items-baseline mb-[10px]'>
-            <div className='text-text-2 text-[13px]'>
-              Suggested · short reads
-            </div>
+            <div className='text-text-2 text-[13px]'>Suggested · short reads</div>
             <div className='text-text-3 text-[12px]'>See all</div>
           </div>
           <div className='flex gap-[10px] overflow-x-auto -mr-6 pr-6'>
             {[
-              {
-                t: 'Why the board hurts less on day 12',
-                s: '3 min · essay',
-                tone: 1,
-              },
-              {
-                t: 'A small guide to box breathing',
-                s: '2 min · audio',
-                tone: 2,
-              },
+              { t: 'Why the board hurts less on day 12', s: '3 min · essay', tone: 1 },
+              { t: 'A small guide to box breathing', s: '2 min · audio', tone: 2 },
               { t: 'On not tracking everything', s: '5 min · essay', tone: 1 },
             ].map((c, i) => (
-              <div
-                key={i}
-                className='card min-w-[200px] overflow-hidden border border-divider p-0'
-              >
+              <div key={i} className='card min-w-[200px] overflow-hidden border border-divider p-0'>
                 <div
                   className='h-[100px] relative'
                   style={{
@@ -222,11 +225,7 @@ export function HomeScreen({ nav }) {
                         : 'linear-gradient(135deg, var(--p-bg-3) 0%, var(--p-illus) 100%)',
                   }}
                 >
-                  <svg
-                    width='100%'
-                    height='100%'
-                    className='absolute inset-0 opacity-[0.35]'
-                  >
+                  <svg width='100%' height='100%' className='absolute inset-0 opacity-[0.35]'>
                     {Array.from({ length: 12 }).map((_, k) => (
                       <circle
                         key={k}
@@ -239,9 +238,7 @@ export function HomeScreen({ nav }) {
                   </svg>
                 </div>
                 <div className='p-[14px]'>
-                  <div className='font-medium text-text mb-[6px] text-[14px] leading-[1.3]'>
-                    {c.t}
-                  </div>
+                  <div className='font-medium text-text mb-[6px] text-[14px] leading-[1.3]'>{c.t}</div>
                   <div className='text-text-3 text-[11px]'>{c.s}</div>
                 </div>
               </div>
@@ -255,24 +252,37 @@ export function HomeScreen({ nav }) {
             <div className='text-text-2 text-[13px]'>This week</div>
             <div className='text-text-3 text-[11px]'>minutes per day</div>
           </div>
-          <WeeklyChart data={[4, 6, 0, 5, 7, 8, 6]} max={10} />
+          <div className='relative'>
+            <div style={{ opacity: hasWeeklyData ? 1 : 0.35 }}>
+              <WeeklyChart data={weeklyBars} max={weeklyMax} />
+            </div>
+            {!hasWeeklyData && (
+              <div className='absolute inset-0 flex items-center justify-center'>
+                <div className='text-text-3 text-[12px] text-center leading-[1.6]'>
+                  Complete a session
+                  <br />
+                  to see your activity
+                </div>
+              </div>
+            )}
+          </div>
           <div className='divider my-3.5 -mx-[18px]' />
-          <div className='flex justify-between'>
+          <div className='flex justify-between' style={{ opacity: hasWeeklyData ? 1 : 0.45 }}>
             <div>
               <div className='text-text-3 text-[11px]'>This week</div>
               <div className='num mt-[2px] text-[18px] font-medium'>
-                36{' '}
+                {weeklyTotal}{' '}
                 <span className='text-text-3 text-[11px] font-normal'>min</span>
               </div>
             </div>
             <div>
               <div className='text-text-3 text-[11px]'>Sessions</div>
-              <div className='num mt-[2px] text-[18px] font-medium'>6</div>
+              <div className='num mt-[2px] text-[18px] font-medium'>{weeklySessions}</div>
             </div>
             <div>
               <div className='text-text-3 text-[11px]'>Avg. mood</div>
-              <div className='font-medium mt-1 text-success text-[14px]'>
-                Settled
+              <div className='font-medium mt-1 text-text-3 text-[14px]'>
+                {hasWeeklyData ? '—' : '—'}
               </div>
             </div>
           </div>
