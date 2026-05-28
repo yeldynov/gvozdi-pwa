@@ -56,7 +56,9 @@ function GoalBadge({ entry }) {
 
 export function SessionsListScreen({ nav }) {
   const { practiceLog, setSelectedSession } = useAppStore()
-  const sorted = [...practiceLog].sort((a, b) => b.id.localeCompare(a.id))
+  const sorted = [...practiceLog].sort(
+    (a, b) => (Number(b.id) || 0) - (Number(a.id) || 0),
+  )
 
   function open(id) {
     setSelectedSession(id, 'sessions-list')

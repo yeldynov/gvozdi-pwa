@@ -7,13 +7,17 @@ export function SessionActiveBoard({ nav }) {
   const total = 360
   const t = useSessionTimer(total)
   const setCurrentSessionType = useAppStore((s) => s.setCurrentSessionType)
+  const setPendingCompletion = useAppStore((s) => s.setPendingCompletion)
 
   useEffect(() => {
     setCurrentSessionType('board')
   }, [])
 
   useEffect(() => {
-    if (t.remaining === 0) nav('session-done')
+    if (t.remaining === 0) {
+      setPendingCompletion(true)
+      nav('session-done')
+    }
   }, [t.remaining])
 
   const cols = 11,
@@ -28,7 +32,7 @@ export function SessionActiveBoard({ nav }) {
       <div className='flex justify-between items-center mb-[14px]'>
         <button
           onClick={() => nav('home')}
-          className='border-none bg-transparent text-text-2 flex p-0'
+          className='flex p-0 bg-transparent border-none text-text-2'
         >
           <Icons.close size={22} />
         </button>
@@ -36,7 +40,7 @@ export function SessionActiveBoard({ nav }) {
           <span className='inline-block w-[6px] h-[6px] rounded-pill bg-error animate-pulse-gv' />
           LIVE · session 14
         </div>
-        <button className='border-none bg-transparent text-text-2 flex p-0'>
+        <button className='flex p-0 bg-transparent border-none text-text-2'>
           <Icons.more size={22} />
         </button>
       </div>
@@ -165,7 +169,10 @@ export function SessionActiveBoard({ nav }) {
           )}
         </button>
         <button
-          onClick={() => nav('session-done')}
+          onClick={() => {
+            setPendingCompletion(true)
+            nav('session-done')
+          }}
           className='border-none rounded-md bg-bg-2 text-text flex items-center justify-center gap-[6px] font-medium py-0 px-[22px] text-[15px]'
         >
           End

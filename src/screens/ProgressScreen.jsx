@@ -19,10 +19,12 @@ const MOOD_LABEL = {
 }
 
 const POST_LEVEL = {
-  intense: 0, tense: 0,
+  intense: 0,
+  tense: 0,
   mixed: 1,
   mild: 2,
-  settled: 2, easy: 3,
+  settled: 2,
+  easy: 3,
   open: 3,
 }
 
@@ -37,7 +39,6 @@ const ICON_MAP = {
 const W = 320,
   H = 80,
   PT = 8
-const xAt = (i) => (i / 6) * W
 const yAt = (mood) => PT + ((3 - (MOOD_LEVEL[mood] ?? 1)) / 3) * H
 
 export function ProgressScreen({ nav }) {
@@ -48,16 +49,23 @@ export function ProgressScreen({ nav }) {
   const hasAnyPractice = practiceLog.length > 0
 
   const today = new Date()
-  const todayStr = today.toISOString().slice(0, 10)
-
-  const last7 = Array.from({ length: 7 }, (_, i) => {
+  const nDays = period === 'month' ? 30 : period === 'year' ? 365 : 7
+  const lastNDates = Array.from({ length: nDays }, (_, i) => {
     const d = new Date(today)
-    d.setDate(d.getDate() - 6 + i)
-    return d.toISOString().slice(0, 10)
+    d.setDate(d.getDate() - (nDays - 1) + i)
+    return d.toLocaleDateString('en-CA')
   })
+  const todayStr = lastNDates[lastNDates.length - 1]
+  const xAt = (i) =>
+    lastNDates.length > 1 ? (i / (lastNDates.length - 1)) * W : W / 2
 
-  const bars = last7.map((date) => {
-    const dayEntries = practiceLog.filter((e) => e.date === date)
+  const filteredMood = moodLog.filter((e) => lastNDates.includes(e.date))
+  const filteredPractice = practiceLog.filter((e) =>
+    lastNDates.includes(e.date),
+  )
+
+  const bars = lastNDates.map((date) => {
+    const dayEntries = filteredPractice.filter((e) => e.date === date)
     return Math.round(
       dayEntries.reduce((sum, e) => sum + e.durationSec, 0) / 60,
     )
@@ -66,15 +74,15 @@ export function ProgressScreen({ nav }) {
   const hasChartData = bars.some((v) => v > 0)
 
   const totalMinutes = bars.reduce((s, v) => s + v, 0)
-  const totalSessions = practiceLog.filter((e) => last7.includes(e.date)).length
+  const totalSessions = filteredPractice.length
 
-  const byDate = Object.fromEntries(moodLog.map((e) => [e.date, e.mood]))
-  const hasMoodData = moodLog.length > 0
+  const byDate = Object.fromEntries(filteredMood.map((e) => [e.date, e.mood]))
+  const hasMoodData = filteredMood.length > 0
 
   const postAllByDate = {}
-  for (const entry of practiceLog) {
+  for (const entry of filteredPractice) {
     const val = entry.tension ?? entry.postMood
-    if (val != null && last7.includes(entry.date)) {
+    if (val != null) {
       if (!postAllByDate[entry.date]) postAllByDate[entry.date] = []
       postAllByDate[entry.date].push(POST_LEVEL[val] ?? 1)
     }
@@ -87,7 +95,7 @@ export function ProgressScreen({ nav }) {
     return d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2)
   }
 
-  const recordedPts = last7
+  const recordedPts = lastNDates
     .map((d, i) =>
       byDate[d]
         ? { x: xAt(i), y: yAt(byDate[d]), mood: byDate[d], date: d }
@@ -95,7 +103,7 @@ export function ProgressScreen({ nav }) {
     )
     .filter(Boolean)
 
-  const postAvgPts = last7
+  const postAvgPts = lastNDates
     .map((d, i) => {
       const levels = postAllByDate[d]
       if (!levels?.length) return null
@@ -119,7 +127,7 @@ export function ProgressScreen({ nav }) {
       : null
 
   const latestEntry =
-    [...moodLog].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null
+    [...filteredMood].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null
 
   const earnedMilestones = ACHIEVEMENTS.filter((a) =>
     earnedAchievementIds.includes(a.id),
@@ -137,7 +145,7 @@ export function ProgressScreen({ nav }) {
         </div>
 
         {/* period toggle */}
-        <div className='flex bg-bg-2 rounded-md p-1 mb-5'>
+        <div className='flex p-1 mb-5 rounded-md bg-bg-2'>
           {['week', 'month', 'year'].map((p) => (
             <button
               key={p}
@@ -293,7 +301,7 @@ export function ProgressScreen({ nav }) {
               )}
 
               {/* pre-session mood dots */}
-              {last7.map((d, i) => {
+              {lastNDates.map((d, i) => {
                 const mood = byDate[d]
                 const x = xAt(i)
                 const isToday = d === todayStr
@@ -325,7 +333,7 @@ export function ProgressScreen({ nav }) {
               })}
 
               {/* post-session dots per day: spread + vertical range line */}
-              {last7.map((d, i) => {
+              {lastNDates.map((d, i) => {
                 const levels = postAllByDate[d]
                 if (!levels?.length) return null
                 const x = xAt(i)
@@ -347,7 +355,10 @@ export function ProgressScreen({ nav }) {
                       />
                     )}
                     {levels.map((lv, j) => {
-                      const offset = levels.length === 1 ? 0 : (j - (levels.length - 1) / 2) * SPREAD
+                      const offset =
+                        levels.length === 1
+                          ? 0
+                          : (j - (levels.length - 1) / 2) * SPREAD
                       const y = PT + ((3 - lv) / 3) * H
                       return (
                         <rect
@@ -367,7 +378,7 @@ export function ProgressScreen({ nav }) {
               })}
 
               {/* day labels */}
-              {last7.map((d, i) => (
+              {lastNDates.map((d, i) => (
                 <text
                   key={d}
                   x={xAt(i)}
@@ -396,7 +407,10 @@ export function ProgressScreen({ nav }) {
           </div>
 
           {/* legend */}
-          <div className='flex gap-4 mt-3' style={{ opacity: hasCorrData ? 1 : 0.4 }}>
+          <div
+            className='flex gap-4 mt-3'
+            style={{ opacity: hasCorrData ? 1 : 0.4 }}
+          >
             <div className='flex items-center gap-[5px]'>
               <div className='w-[7px] h-[7px] rounded-full bg-text-3' />
               <span className='text-text-3 text-[10px]'>Pre-session mood</span>
@@ -406,7 +420,9 @@ export function ProgressScreen({ nav }) {
                 className='w-[7px] h-[7px] rotate-45'
                 style={{ background: 'var(--p-primary)' }}
               />
-              <span className='text-text-3 text-[10px]'>Post-session tension</span>
+              <span className='text-text-3 text-[10px]'>
+                Post-session tension
+              </span>
             </div>
           </div>
         </div>
@@ -422,7 +438,7 @@ export function ProgressScreen({ nav }) {
             style={{ padding: 14, opacity: 0.5 }}
           >
             <div
-              className='w-10 h-10 rounded-pill flex items-center justify-center shrink-0'
+              className='flex items-center justify-center w-10 h-10 rounded-pill shrink-0'
               style={{
                 border: '1.5px solid var(--p-divider)',
                 color: 'var(--p-text-3)',
@@ -448,7 +464,7 @@ export function ProgressScreen({ nav }) {
                   style={{ padding: 14 }}
                 >
                   <div
-                    className='w-10 h-10 rounded-pill flex items-center justify-center shrink-0'
+                    className='flex items-center justify-center w-10 h-10 rounded-pill shrink-0'
                     style={{ border: '1.5px solid ' + a.ring, color: a.ring }}
                   >
                     <I size={18} />

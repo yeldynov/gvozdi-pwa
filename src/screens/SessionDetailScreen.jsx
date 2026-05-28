@@ -68,7 +68,7 @@ export function SessionDetailScreen({ nav }) {
     return (
       <div className='h-full flex flex-col bg-bg pt-[52px] px-6'>
         <button
-          onClick={() => nav(sessionDetailBack)}
+          onClick={() => nav(sessionDetailBack ?? 'home')}
           className='border-none bg-bg-2 w-10 h-10 rounded-pill text-text flex items-center justify-center mb-6'
         >
           <Icons.chevron_left size={20} />
@@ -89,7 +89,7 @@ export function SessionDetailScreen({ nav }) {
         {/* header */}
         <div className='flex items-center gap-3 mb-7'>
           <button
-            onClick={() => nav(sessionDetailBack)}
+            onClick={() => nav(sessionDetailBack ?? 'home')}
             className='border-none bg-bg-2 w-10 h-10 rounded-pill text-text flex items-center justify-center shrink-0'
           >
             <Icons.chevron_left size={20} />

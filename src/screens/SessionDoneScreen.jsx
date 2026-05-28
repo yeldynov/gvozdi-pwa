@@ -13,17 +13,31 @@ export function SessionDoneScreen({ nav }) {
     { k: 'open', l: 'Open' },
   ]
 
-  const { practiceLog, currentSessionType, logPractice, sessionDuration, sessionSaved, consumeSessionSaved, updateLastEntryPostMood } = useAppStore()
+  const {
+    practiceLog,
+    currentSessionType,
+    logPractice,
+    sessionDuration,
+    sessionSaved,
+    consumeSessionSaved,
+    updateLastEntryPostMood,
+    pendingCompletion,
+    clearPendingCompletion,
+  } = useAppStore()
   const hasLogged = useRef(false)
 
   useEffect(() => {
-    if (!hasLogged.current) {
+    if (!hasLogged.current && pendingCompletion) {
       hasLogged.current = true
       if (sessionSaved) {
         consumeSessionSaved()
       } else {
-        logPractice({ type: currentSessionType ?? 'board', durationSec: sessionDuration * 60 })
+        logPractice({
+          type: currentSessionType ?? 'board',
+          durationSec: sessionDuration * 60,
+        })
       }
+      clearPendingCompletion()
     }
   }, [])
 
@@ -34,7 +48,7 @@ export function SessionDoneScreen({ nav }) {
 
   return (
     <div className='h-full flex flex-col bg-bg pt-[60px] px-6 pb-7 animate-completion'>
-      <div className='flex-1 flex flex-col'>
+      <div className='flex flex-col flex-1'>
         {/* big mark */}
         <div className='flex justify-center mb-6'>
           <div className='w-[88px] h-[88px] rounded-pill flex items-center justify-center relative border-[1.5px] border-primary'>
@@ -56,7 +70,7 @@ export function SessionDoneScreen({ nav }) {
         </div>
 
         {/* stats row */}
-        <div className='flex justify-around border-t border-b border-divider py-5'>
+        <div className='flex justify-around py-5 border-t border-b border-divider'>
           <div className='text-center'>
             <div className='num display text-[32px] font-light leading-none'>
               {fmt(displayDurationSec)}
@@ -96,7 +110,10 @@ export function SessionDoneScreen({ nav }) {
               return (
                 <button
                   key={m.k}
-                  onClick={() => { setMood(m.k); updateLastEntryPostMood(m.k) }}
+                  onClick={() => {
+                    setMood(m.k)
+                    updateLastEntryPostMood(m.k)
+                  }}
                   className={`flex-1 rounded-pill font-medium transition-all duration-150 py-[10px] px-1 text-[13px] ${on ? 'bg-primary text-on-primary border-primary' : 'bg-transparent text-text border-divider'} border`}
                 >
                   {m.l}
@@ -121,10 +138,10 @@ export function SessionDoneScreen({ nav }) {
       </div>
 
       <div className='flex gap-[10px]'>
-        <button className='btn ghost flex-1' onClick={() => nav('home')}>
+        <button className='flex-1 btn ghost' onClick={() => nav('home')}>
           Done
         </button>
-        <button className='btn flex-1' onClick={() => nav('progress')}>
+        <button className='flex-1 btn' onClick={() => nav('progress')}>
           See progress
         </button>
       </div>

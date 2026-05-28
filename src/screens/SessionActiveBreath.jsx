@@ -6,6 +6,7 @@ import { useAppStore } from '../store/useAppStore'
 export function SessionActiveBreath({ nav }) {
   const setCurrentSessionType = useAppStore((s) => s.setCurrentSessionType)
   const sessionDuration = useAppStore((s) => s.sessionDuration)
+  const setPendingCompletion = useAppStore((s) => s.setPendingCompletion)
   const total = sessionDuration * 60
   const t = useSessionTimer(total)
   const R = 124,
@@ -17,7 +18,10 @@ export function SessionActiveBreath({ nav }) {
   }, [])
 
   useEffect(() => {
-    if (t.remaining === 0) nav('session-done')
+    if (t.remaining === 0) {
+      setPendingCompletion(true)
+      nav('session-done')
+    }
   }, [t.remaining])
 
   return (
@@ -126,7 +130,10 @@ export function SessionActiveBreath({ nav }) {
           {t.running ? <Icons.pause size={26} /> : <Icons.play size={26} />}
         </button>
         <button
-          onClick={() => nav('session-done')}
+          onClick={() => {
+            setPendingCompletion(true)
+            nav('session-done')
+          }}
           className='border-none bg-bg-2 text-text-2 w-[52px] h-[52px] rounded-pill flex items-center justify-center'
         >
           <Icons.check size={20} />

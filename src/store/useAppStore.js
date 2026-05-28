@@ -12,6 +12,7 @@ export const useAppStore = create(
       currentSessionType: null,
       sessionDuration: 6,
       sessionSaved: false,
+      pendingCompletion: false,
       selectedSessionId: null,
       sessionDetailBack: 'home',
       earnedAchievementIds: [],
@@ -20,7 +21,7 @@ export const useAppStore = create(
 
       setMood: (mood) =>
         set((state) => {
-          const today = new Date().toISOString().slice(0, 10)
+          const today = new Date().toLocaleDateString('en-CA')
           const log = state.moodLog.filter((e) => e.date !== today)
           return {
             selectedMood: mood,
@@ -34,9 +35,16 @@ export const useAppStore = create(
 
       setSessionDuration: (dur) => set({ sessionDuration: dur }),
 
-      logPractice: ({ type, durationSec, goalSec, goalAchieved, tension, comment }) =>
+      logPractice: ({
+        type,
+        durationSec,
+        goalSec,
+        goalAchieved,
+        tension,
+        comment,
+      }) =>
         set((state) => {
-          const date = new Date().toISOString().slice(0, 10)
+          const date = new Date().toLocaleDateString('en-CA')
           const entry = {
             id: Date.now().toString(),
             date,
@@ -68,6 +76,9 @@ export const useAppStore = create(
         }),
 
       consumeSessionSaved: () => set({ sessionSaved: false }),
+
+      setPendingCompletion: (val) => set({ pendingCompletion: val }),
+      clearPendingCompletion: () => set({ pendingCompletion: false }),
 
       updateLastEntryPostMood: (postMood) =>
         set((state) => {

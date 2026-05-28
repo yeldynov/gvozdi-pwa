@@ -20,7 +20,7 @@ export function useSessionTimer(totalSec) {
   return {
     elapsed,
     remaining: Math.max(0, totalSec - elapsed),
-    progress: Math.min(1, elapsed / totalSec),
+    progress: totalSec > 0 ? Math.min(1, elapsed / totalSec) : 0,
     running,
     toggle: () => setRunning((r) => !r),
     reset: () => {

@@ -62,8 +62,9 @@ export function calcStreak(practiceLog) {
   const uniqueDates = [...new Set(practiceLog.map((e) => e.date))]
     .sort()
     .reverse()
-  const today = new Date().toISOString().slice(0, 10)
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+  const localDate = (d) => d.toLocaleDateString('en-CA')
+  const today = localDate(new Date())
+  const yesterday = localDate(new Date(Date.now() - 86400000))
 
   if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) return 0
 
@@ -74,7 +75,7 @@ export function calcStreak(practiceLog) {
       streak++
       const d = new Date(expected + 'T12:00:00')
       d.setDate(d.getDate() - 1)
-      expected = d.toISOString().slice(0, 10)
+      expected = localDate(d)
     } else {
       break
     }
