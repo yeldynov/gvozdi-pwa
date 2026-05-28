@@ -13,14 +13,14 @@ export function useSessionTimer(totalSec) {
   useEffect(() => {
     if (!running) return
     ref.current = setInterval(() => {
-      setElapsed((e) => Math.min(totalSec, e + 1))
+      setElapsed((e) => e + 1)
     }, 1000)
     return () => clearInterval(ref.current)
   }, [running, totalSec])
   return {
     elapsed,
-    remaining: totalSec - elapsed,
-    progress: elapsed / totalSec,
+    remaining: Math.max(0, totalSec - elapsed),
+    progress: Math.min(1, elapsed / totalSec),
     running,
     toggle: () => setRunning((r) => !r),
     reset: () => {

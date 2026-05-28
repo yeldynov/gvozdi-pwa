@@ -273,6 +273,15 @@
     opacity: 0.6;
   }
 }
+@keyframes gv-breathe-ring {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
 @keyframes gv-fade-up {
   from {
     opacity: 0;

@@ -11,6 +11,7 @@ export default {
         'fade-up': 'gv-fade-up .5s ease both',
         'fade-up-md': 'gv-fade-up .6s ease both',
         breathe: 'gv-breathe 8s ease-in-out infinite',
+        'breathe-ring': 'gv-breathe-ring 8s ease-in-out infinite',
         'pulse-gv': 'gv-pulse 2s infinite',
         completion: 'gv-completion .6s ease both',
       },
