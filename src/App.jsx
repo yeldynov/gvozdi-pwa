@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '@clerk/react'
 import Icons from './icons'
 import { WelcomeScreen } from './screens/WelcomeScreen'
 import { PracticeSelectScreen } from './screens/PracticeSelectScreen'
@@ -8,15 +9,19 @@ import { ProgressScreen } from './screens/ProgressScreen'
 import { ProfileScreen } from './screens/ProfileScreen'
 import { PaywallScreen } from './screens/PaywallScreen'
 import { SessionSetupScreen } from './screens/SessionSetupScreen'
-import { SessionActiveBreath } from './screens/SessionActiveBreath'
+import { SessionActiveNails } from './screens/SessionActiveNails'
 import { SessionActivePure } from './screens/SessionActivePure'
 import { SessionActiveBoard } from './screens/SessionActiveBoard'
 import { SessionDoneScreen } from './screens/SessionDoneScreen'
+import { SessionsListScreen } from './screens/SessionsListScreen'
+import { SessionDetailScreen } from './screens/SessionDetailScreen'
+import { AchievementOverlay } from './screens/AchievementOverlay'
 import './globals.css'
 
 function BottomNav({ tab, setTab }) {
   const items = [
     { k: 'home', l: 'Home', I: Icons.home },
+    { k: 'session', l: 'Practice', I: Icons.moon },
     { k: 'library', l: 'Library', I: Icons.compass },
     { k: 'progress', l: 'Progress', I: Icons.chart },
     { k: 'profile', l: 'Profile', I: Icons.user },
@@ -62,37 +67,53 @@ function PWAFrame({ children, bottomNav }) {
   )
 }
 
-function App({ start = 'welcome' }) {
-  const [screen, setScreen] = useState(start)
+function App() {
+  const { isLoaded, isSignedIn } = useAuth()
+  const [screen, setScreen] = useState('home')
 
-  const tabRoutes = ['home', 'library', 'progress', 'profile']
+  const tabRoutes = ['home', 'session', 'library', 'progress', 'profile']
   const isTab = tabRoutes.includes(screen)
 
   const nav = (to) => {
-    if (to === 'session-active') setScreen('session-breath')
+    if (to === 'session-active') setScreen('session-nails')
     else setScreen(to)
   }
 
+  if (!isLoaded) {
+    return <div className='h-full bg-bg' />
+  }
+
+  if (!isSignedIn) {
+    return (
+      <PWAFrame bottomNav={null}>
+        <WelcomeScreen />
+      </PWAFrame>
+    )
+  }
+
   const screens = {
-    welcome: <WelcomeScreen nav={nav} />,
     'practice-select': <PracticeSelectScreen nav={nav} />,
     home: <HomeScreen nav={nav} />,
+    session: <SessionSetupScreen nav={nav} />,
     library: <LibraryScreen nav={nav} />,
     progress: <ProgressScreen nav={nav} />,
     profile: <ProfileScreen nav={nav} />,
     paywall: <PaywallScreen nav={nav} />,
     'session-setup': <SessionSetupScreen nav={nav} />,
-    'session-breath': <SessionActiveBreath nav={nav} />,
+    'session-nails': <SessionActiveNails nav={nav} />,
     'session-pure': <SessionActivePure nav={nav} />,
     'session-board': <SessionActiveBoard nav={nav} />,
     'session-done': <SessionDoneScreen nav={nav} />,
+    'sessions-list': <SessionsListScreen nav={nav} />,
+    'session-detail': <SessionDetailScreen nav={nav} />,
   }
 
   return (
     <PWAFrame
       bottomNav={isTab ? <BottomNav tab={screen} setTab={setScreen} /> : null}
     >
-      {screens[screen] || <WelcomeScreen nav={nav} />}
+      {screens[screen] || <HomeScreen nav={nav} />}
+      <AchievementOverlay />
     </PWAFrame>
   )
 }
@@ -100,7 +121,7 @@ function App({ start = 'welcome' }) {
 export default function Root() {
   return (
     <div className='gv palette-earthy' style={{ height: '100%' }}>
-      <App start='welcome' />
+      <App />
     </div>
   )
 }

@@ -1,5 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Icons from '../icons'
+import { useAppStore } from '../store/useAppStore'
+import { calcStreak } from '../store/achievements'
+import { fmt } from '../hooks/useSessionTimer'
 
 export function SessionDoneScreen({ nav }) {
   const [mood, setMood] = useState('settled')
@@ -10,9 +13,42 @@ export function SessionDoneScreen({ nav }) {
     { k: 'open', l: 'Open' },
   ]
 
+  const {
+    practiceLog,
+    currentSessionType,
+    logPractice,
+    sessionDuration,
+    sessionSaved,
+    consumeSessionSaved,
+    updateLastEntryPostMood,
+    pendingCompletion,
+    clearPendingCompletion,
+  } = useAppStore()
+  const hasLogged = useRef(false)
+
+  useEffect(() => {
+    if (!hasLogged.current && pendingCompletion) {
+      hasLogged.current = true
+      if (sessionSaved) {
+        consumeSessionSaved()
+      } else {
+        logPractice({
+          type: currentSessionType ?? 'board',
+          durationSec: sessionDuration * 60,
+        })
+      }
+      clearPendingCompletion()
+    }
+  }, [])
+
+  const lastEntry = practiceLog[practiceLog.length - 1]
+  const displayDurationSec = lastEntry?.durationSec ?? sessionDuration * 60
+
+  const streak = calcStreak(practiceLog)
+
   return (
     <div className='h-full flex flex-col bg-bg pt-[60px] px-6 pb-7 animate-completion'>
-      <div className='flex-1 flex flex-col'>
+      <div className='flex flex-col flex-1'>
         {/* big mark */}
         <div className='flex justify-center mb-6'>
           <div className='w-[88px] h-[88px] rounded-pill flex items-center justify-center relative border-[1.5px] border-primary'>
@@ -24,20 +60,20 @@ export function SessionDoneScreen({ nav }) {
 
         <div className='text-center mb-7'>
           <div className='text-text-3 uppercase mb-2 text-[12px] tracking-[0.14em]'>
-            Session 14 · complete
+            Session {practiceLog.length} · complete
           </div>
           <div className='display text-[30px] leading-[1.1]'>
-            Six minutes.
+            {Math.floor(displayDurationSec / 60)} minutes.
             <br />
             Well done.
           </div>
         </div>
 
         {/* stats row */}
-        <div className='flex justify-around border-t border-b border-divider py-5'>
+        <div className='flex justify-around py-5 border-t border-b border-divider'>
           <div className='text-center'>
             <div className='num display text-[32px] font-light leading-none'>
-              6:00
+              {fmt(displayDurationSec)}
             </div>
             <div className='text-text-3 uppercase mt-[6px] text-[10px] tracking-[0.1em]'>
               duration
@@ -46,7 +82,7 @@ export function SessionDoneScreen({ nav }) {
           <div className='w-[1px] bg-divider' />
           <div className='text-center'>
             <div className='num display text-[32px] font-light leading-none'>
-              13
+              {streak}
             </div>
             <div className='text-text-3 uppercase mt-[6px] text-[10px] tracking-[0.1em]'>
               day streak
@@ -74,7 +110,10 @@ export function SessionDoneScreen({ nav }) {
               return (
                 <button
                   key={m.k}
-                  onClick={() => setMood(m.k)}
+                  onClick={() => {
+                    setMood(m.k)
+                    updateLastEntryPostMood(m.k)
+                  }}
                   className={`flex-1 rounded-pill font-medium transition-all duration-150 py-[10px] px-1 text-[13px] ${on ? 'bg-primary text-on-primary border-primary' : 'bg-transparent text-text border-divider'} border`}
                 >
                   {m.l}
@@ -99,10 +138,10 @@ export function SessionDoneScreen({ nav }) {
       </div>
 
       <div className='flex gap-[10px]'>
-        <button className='btn ghost flex-1' onClick={() => nav('home')}>
+        <button className='flex-1 btn ghost' onClick={() => nav('home')}>
           Done
         </button>
-        <button className='btn flex-1' onClick={() => nav('progress')}>
+        <button className='flex-1 btn' onClick={() => nav('progress')}>
           See progress
         </button>
       </div>

@@ -1,16 +1,27 @@
 import { useEffect } from 'react'
 import Icons from '../icons'
 import { useSessionTimer, fmt } from '../hooks/useSessionTimer'
+import { useAppStore } from '../store/useAppStore'
 
 export function SessionActiveBreath({ nav }) {
-  const total = 360
+  const setCurrentSessionType = useAppStore((s) => s.setCurrentSessionType)
+  const sessionDuration = useAppStore((s) => s.sessionDuration)
+  const setPendingCompletion = useAppStore((s) => s.setPendingCompletion)
+  const total = sessionDuration * 60
   const t = useSessionTimer(total)
   const R = 124,
     C = 2 * Math.PI * R
   const offset = C * (1 - t.progress)
 
   useEffect(() => {
-    if (t.remaining === 0) nav('session-done')
+    setCurrentSessionType('breath')
+  }, [])
+
+  useEffect(() => {
+    if (t.remaining === 0) {
+      setPendingCompletion(true)
+      nav('session-done')
+    }
   }, [t.remaining])
 
   return (
@@ -21,22 +32,22 @@ export function SessionActiveBreath({ nav }) {
           'radial-gradient(ellipse at 50% 30%, var(--p-bg-2) 0%, var(--p-bg) 60%)',
       }}
     >
-      <div className='flex justify-between items-center'>
+      <div className='flex items-center justify-between'>
         <button
           onClick={() => nav('home')}
-          className='border-none bg-transparent text-text-2 flex items-center p-0'
+          className='flex items-center p-0 bg-transparent border-none text-text-2'
         >
           <Icons.close size={22} />
         </button>
         <div className='text-text-3 uppercase text-[11px] tracking-[0.14em]'>
           Breath ring
         </div>
-        <button className='border-none bg-transparent text-text-2 flex items-center p-0'>
+        <button className='flex items-center p-0 bg-transparent border-none text-text-2'>
           <Icons.more size={22} />
         </button>
       </div>
 
-      <div className='flex-1 flex flex-col items-center justify-center gap-6'>
+      <div className='flex flex-col items-center justify-center flex-1 gap-6'>
         <div className='text-text-2 text-[13px] tracking-[0.06em]'>
           {t.running ? 'Breathe in · 4' : 'Paused'}
         </div>
@@ -50,6 +61,12 @@ export function SessionActiveBreath({ nav }) {
               fill='none'
               stroke='var(--p-bg-3)'
               strokeWidth='2'
+              style={{
+                transformOrigin: '140px 140px',
+                animation: t.running
+                  ? 'gv-breathe-ring 8s ease-in-out infinite'
+                  : 'none',
+              }}
             />
             <circle
               cx='140'
@@ -87,7 +104,7 @@ export function SessionActiveBreath({ nav }) {
             className={`absolute rounded-pill bg-primary top-1/2 left-1/2 w-[110px] h-[110px] -ml-[55px] -mt-[55px] opacity-40 ${t.running ? 'animate-breathe' : ''}`}
           />
           {/* time */}
-          <div className='absolute text-center text-text top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'>
+          <div className='absolute text-center -translate-x-1/2 -translate-y-1/2 text-text top-1/2 left-1/2'>
             <div className='num display text-[56px] leading-none font-extralight'>
               {fmt(t.remaining)}
             </div>
@@ -96,26 +113,10 @@ export function SessionActiveBreath({ nav }) {
             </div>
           </div>
         </div>
-
-        {/* sub-stats */}
-        <div className='flex gap-6'>
-          {[
-            { l: 'Heart', v: '64', u: 'bpm' },
-            { l: 'Breath', v: '6.4', u: 'rpm' },
-            { l: 'Steady', v: '92', u: '%' },
-          ].map((s) => (
-            <div key={s.l} className='text-center'>
-              <div className='num text-text font-medium text-[18px]'>{s.v}</div>
-              <div className='text-text-3 uppercase mt-[2px] text-[10px] tracking-[0.1em]'>
-                {s.l} · {s.u}
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* controls */}
-      <div className='flex justify-center items-center gap-5'>
+      <div className='flex items-center justify-center gap-5'>
         <button
           onClick={t.reset}
           className='border-none bg-bg-2 text-text-2 w-[52px] h-[52px] rounded-pill flex items-center justify-center'
@@ -129,7 +130,10 @@ export function SessionActiveBreath({ nav }) {
           {t.running ? <Icons.pause size={26} /> : <Icons.play size={26} />}
         </button>
         <button
-          onClick={() => nav('session-done')}
+          onClick={() => {
+            setPendingCompletion(true)
+            nav('session-done')
+          }}
           className='border-none bg-bg-2 text-text-2 w-[52px] h-[52px] rounded-pill flex items-center justify-center'
         >
           <Icons.check size={20} />
