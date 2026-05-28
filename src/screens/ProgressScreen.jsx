@@ -10,9 +10,16 @@ const MOOD_COLOR = {
   settled: 'var(--p-success)',
   open: 'var(--p-streak)',
 }
-const MOOD_LABEL = { tense: 'Tense', neutral: 'Neutral', settled: 'Settled', open: 'Open' }
+const MOOD_LABEL = {
+  tense: 'Tense',
+  neutral: 'Neutral',
+  settled: 'Settled',
+  open: 'Open',
+}
 
-const W = 320, H = 80, PT = 8
+const W = 320,
+  H = 80,
+  PT = 8
 const xAt = (i) => (i / 6) * W
 const yAt = (mood) => PT + ((3 - (MOOD_LEVEL[mood] ?? 1)) / 3) * H
 
@@ -32,7 +39,7 @@ export function ProgressScreen({ nav }) {
     return d.toISOString().slice(0, 10)
   })
 
-  const byDate = Object.fromEntries(moodLog.map(e => [e.date, e.mood]))
+  const byDate = Object.fromEntries(moodLog.map((e) => [e.date, e.mood]))
 
   const dayLabel = (iso) => {
     const d = new Date(iso + 'T12:00:00')
@@ -40,14 +47,22 @@ export function ProgressScreen({ nav }) {
   }
 
   const recordedPts = last7
-    .map((d, i) => byDate[d] ? { x: xAt(i), y: yAt(byDate[d]), mood: byDate[d], date: d } : null)
+    .map((d, i) =>
+      byDate[d]
+        ? { x: xAt(i), y: yAt(byDate[d]), mood: byDate[d], date: d }
+        : null,
+    )
     .filter(Boolean)
 
-  const linePath = recordedPts.length > 1
-    ? recordedPts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')
-    : null
+  const linePath =
+    recordedPts.length > 1
+      ? recordedPts
+          .map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+          .join(' ')
+      : null
 
-  const latestEntry = [...moodLog].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null
+  const latestEntry =
+    [...moodLog].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null
 
   return (
     <div className='h-full overflow-auto bg-bg'>
@@ -154,7 +169,10 @@ export function ProgressScreen({ nav }) {
               return (
                 <line
                   key={level}
-                  x1={0} y1={y} x2={W} y2={y}
+                  x1={0}
+                  y1={y}
+                  x2={W}
+                  y2={y}
                   stroke='var(--p-divider)'
                   strokeWidth='1'
                   strokeDasharray='4 5'

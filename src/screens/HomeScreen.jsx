@@ -27,8 +27,29 @@ function getGreeting() {
 
 function getFormattedDate() {
   const now = new Date()
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const days = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ]
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
   return `${days[now.getDay()]} · ${months[now.getMonth()]} ${now.getDate()}`
 }
 
@@ -37,7 +58,9 @@ export function HomeScreen({ nav }) {
   const firstName = user?.firstName || user?.fullName?.split(' ')[0] || 'there'
 
   const { selectedMood, setMood, clearAll, _hasHydrated } = useAppStore()
-  const selectedMoodData = selectedMood ? MOOD_OPTS.find(o => o.k === selectedMood) : null
+  const selectedMoodData = selectedMood
+    ? MOOD_OPTS.find((o) => o.k === selectedMood)
+    : null
   const MoodIcon = selectedMoodData?.I || null
 
   const handleClearData = () => {
@@ -65,7 +88,9 @@ export function HomeScreen({ nav }) {
           </div>
           {_hasHydrated && selectedMood && (
             <div className='mt-[10px] animate-fade-up flex items-center gap-[8px]'>
-              {MoodIcon && <MoodIcon size={14} className='text-text-2 shrink-0' />}
+              {MoodIcon && (
+                <MoodIcon size={14} className='text-text-2 shrink-0' />
+              )}
               <div className='display font-light text-text-2 text-[15px] leading-[1.4] italic'>
                 {MOOD_QUOTES[selectedMood]}
               </div>
