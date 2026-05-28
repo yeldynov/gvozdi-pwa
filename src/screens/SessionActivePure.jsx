@@ -1,10 +1,17 @@
 import { useEffect } from 'react'
 import Icons from '../icons'
 import { useSessionTimer, fmt } from '../hooks/useSessionTimer'
+import { useAppStore } from '../store/useAppStore'
 
 export function SessionActivePure({ nav }) {
   const total = 360
   const t = useSessionTimer(total)
+  const setCurrentSessionType = useAppStore((s) => s.setCurrentSessionType)
+
+  useEffect(() => {
+    setCurrentSessionType('pure')
+  }, [])
+
   useEffect(() => {
     if (t.remaining === 0) nav('session-done')
   }, [t.remaining])
