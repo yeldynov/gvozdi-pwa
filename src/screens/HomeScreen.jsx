@@ -1,41 +1,76 @@
-import { useState } from 'react'
 import { useUser } from '@clerk/react'
 import Icons from '../icons'
 import { WeeklyChart } from './WeeklyChart'
+import { useAppStore } from '../store/useAppStore'
+
+const MOOD_OPTS = [
+  { k: 'tense', label: 'Tense', I: Icons.spark },
+  { k: 'neutral', label: 'Neutral', I: Icons.moon },
+  { k: 'settled', label: 'Settled', I: Icons.leaf },
+  { k: 'open', label: 'Open', I: Icons.heart },
+]
+
+const MOOD_QUOTES = {
+  tense: "Tension means you care. Now let's work with it.",
+  neutral: 'Balanced and present — a solid place to begin.',
+  settled: "That calm you carry? It's your superpower today.",
+  open: 'Open means ready. Today could surprise you.',
+}
+
+function getGreeting() {
+  const h = new Date().getHours()
+  if (h >= 5 && h < 12) return 'Good morning'
+  if (h >= 12 && h < 17) return 'Good afternoon'
+  if (h >= 17 && h < 21) return 'Good evening'
+  return 'Good night'
+}
+
+function getFormattedDate() {
+  const now = new Date()
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return `${days[now.getDay()]} · ${months[now.getMonth()]} ${now.getDate()}`
+}
 
 export function HomeScreen({ nav }) {
   const { user } = useUser()
   const firstName = user?.firstName || user?.fullName?.split(' ')[0] || 'there'
-  const [moodV, setM] = useState('settled')
-  const moodOpts = [
-    { k: 'tense', label: 'Tense', I: Icons.spark },
-    { k: 'neutral', label: 'Neutral', I: Icons.moon },
-    { k: 'settled', label: 'Settled', I: Icons.leaf },
-    { k: 'open', label: 'Open', I: Icons.heart },
-  ]
+
+  const { selectedMood, setMood, clearAll, _hasHydrated } = useAppStore()
+  const selectedMoodData = selectedMood ? MOOD_OPTS.find(o => o.k === selectedMood) : null
+  const MoodIcon = selectedMoodData?.I || null
+
+  const handleClearData = () => {
+    clearAll()
+    useAppStore.persist.clearStorage()
+  }
 
   return (
     <div className='h-full overflow-auto bg-bg'>
       <div className='flex flex-col gap-[22px] pt-[52px] px-6 pb-[100px]'>
         {/* top bar */}
-        <div className='flex justify-between items-center'>
+        <div className='flex items-center'>
           <div className='gv-brand'>gvozdi</div>
-          <div className='flex gap-[14px] text-text-2'>
-            <Icons.search />
-            <Icons.bell />
-          </div>
         </div>
 
         {/* greeting */}
         <div>
           <div className='text-text-3 uppercase mb-2 text-[12px] tracking-[0.14em]'>
-            Monday · Oct 23
+            {getFormattedDate()}
           </div>
           <div className='display text-[30px] leading-[1.15]'>
-            Good morning,
+            {getGreeting()},
             <br />
             {firstName}.
           </div>
+          {_hasHydrated && selectedMood && (
+            <div className='mt-[10px] animate-fade-up flex items-center gap-[8px]'>
+              {MoodIcon && <MoodIcon size={14} className='text-text-2 shrink-0' />}
+              <div className='display font-light text-text-2 text-[15px] leading-[1.4] italic'>
+                {MOOD_QUOTES[selectedMood]}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* streak */}
@@ -62,28 +97,29 @@ export function HomeScreen({ nav }) {
           </div>
         </div>
 
-        {/* mood */}
-        <div>
-          <div className='text-text-2 mb-[10px] text-[13px]'>
-            How does it land?
+        {/* mood — hidden after hydration if mood already selected */}
+        {_hasHydrated && !selectedMood && (
+          <div>
+            <div className='text-text-2 mb-[10px] text-[13px]'>
+              How does it land?
+            </div>
+            <div className='grid grid-cols-4 gap-2'>
+              {MOOD_OPTS.map((o) => {
+                const I = o.I
+                return (
+                  <button
+                    key={o.k}
+                    onClick={() => setMood(o.k)}
+                    className='border-none rounded-sm flex flex-col items-center gap-[6px] transition-colors duration-150 pt-3 px-1 pb-[10px] bg-bg-2 text-text-2'
+                  >
+                    <I size={18} />
+                    <span className='font-medium text-[11px]'>{o.label}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
-          <div className='grid grid-cols-4 gap-2'>
-            {moodOpts.map((o) => {
-              const on = moodV === o.k
-              const I = o.I
-              return (
-                <button
-                  key={o.k}
-                  onClick={() => setM(o.k)}
-                  className={`border-none rounded-sm flex flex-col items-center gap-[6px] transition-colors duration-150 pt-3 px-1 pb-[10px] ${on ? 'bg-primary text-on-primary' : 'bg-bg-2 text-text-2'}`}
-                >
-                  <I size={18} />
-                  <span className='font-medium text-[11px]'>{o.label}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        )}
 
         {/* today's practice CTA */}
         <div className='bg-primary text-on-primary rounded-lg flex flex-col relative overflow-hidden p-[22px] gap-4'>
@@ -216,6 +252,15 @@ export function HomeScreen({ nav }) {
             </div>
           </div>
         </div>
+
+        {/* dev: clear stored data */}
+        <button
+          onClick={handleClearData}
+          className='flex items-center justify-center gap-[6px] w-full py-[10px] border border-dashed border-divider rounded-md text-text-3 text-[11px] bg-transparent'
+        >
+          <Icons.close size={11} />
+          Clear stored data
+        </button>
       </div>
     </div>
   )

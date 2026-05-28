@@ -1,25 +1,53 @@
 import { useState } from 'react'
 import Icons from '../icons'
 import { WeeklyChart } from './WeeklyChart'
+import { useAppStore } from '../store/useAppStore'
+
+const MOOD_LEVEL = { tense: 0, neutral: 1, settled: 2, open: 3 }
+const MOOD_COLOR = {
+  tense: 'var(--p-warn)',
+  neutral: 'var(--p-text-2)',
+  settled: 'var(--p-success)',
+  open: 'var(--p-streak)',
+}
+const MOOD_LABEL = { tense: 'Tense', neutral: 'Neutral', settled: 'Settled', open: 'Open' }
+
+const W = 320, H = 80, PT = 8
+const xAt = (i) => (i / 6) * W
+const yAt = (mood) => PT + ((3 - (MOOD_LEVEL[mood] ?? 1)) / 3) * H
 
 export function ProgressScreen({ nav }) {
   const [period, setPeriod] = useState('week')
   const bars = [4, 6, 0, 5, 7, 8, 6]
   const max = 10
-  const mood = [62, 68, 65, 75, 78, 86, 84]
-  const moodMin = 50,
-    moodMax = 95
-  const W = 320,
-    H = 80
-  const pts = mood.map((v, i) => {
-    const x = (i / (mood.length - 1)) * W
-    const y = H - ((v - moodMin) / (moodMax - moodMin)) * H
-    return [x, y]
+
+  const { moodLog } = useAppStore()
+
+  const today = new Date()
+  const todayStr = today.toISOString().slice(0, 10)
+
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today)
+    d.setDate(d.getDate() - 6 + i)
+    return d.toISOString().slice(0, 10)
   })
-  const path = pts
-    .map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1))
-    .join(' ')
-  const area = path + ` L ${W} ${H} L 0 ${H} Z`
+
+  const byDate = Object.fromEntries(moodLog.map(e => [e.date, e.mood]))
+
+  const dayLabel = (iso) => {
+    const d = new Date(iso + 'T12:00:00')
+    return d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2)
+  }
+
+  const recordedPts = last7
+    .map((d, i) => byDate[d] ? { x: xAt(i), y: yAt(byDate[d]), mood: byDate[d], date: d } : null)
+    .filter(Boolean)
+
+  const linePath = recordedPts.length > 1
+    ? recordedPts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')
+    : null
+
+  const latestEntry = [...moodLog].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null
 
   return (
     <div className='h-full overflow-auto bg-bg'>
@@ -94,69 +122,116 @@ export function ProgressScreen({ nav }) {
           <WeeklyChart data={bars} max={max} height={80} />
         </div>
 
-        {/* mood stability */}
+        {/* mood chart */}
         <div className='card mb-[14px]' style={{ padding: 18 }}>
           <div className='flex justify-between items-baseline mb-[14px]'>
             <div>
               <div className='font-semibold text-[14px]'>How it lands</div>
               <div className='text-text-3 mt-[2px] text-[11px]'>
-                Settled-rate · 7 days
+                Mood · last 7 days
               </div>
             </div>
-            <span
-              className='chip bg-success text-bg'
-              style={{ padding: '4px 8px', fontSize: 11 }}
-            >
-              +18%
-            </span>
+            {latestEntry && (
+              <span
+                className='text-[12px] font-medium'
+                style={{ color: MOOD_COLOR[latestEntry.mood] }}
+              >
+                {MOOD_LABEL[latestEntry.mood]}
+              </span>
+            )}
           </div>
+
           <svg
-            viewBox={`0 0 ${W} ${H + 24}`}
+            viewBox={`0 0 ${W} ${H + PT + 24}`}
             width='100%'
             height='120'
             preserveAspectRatio='none'
             className='overflow-visible'
           >
-            <defs>
-              <linearGradient id='gv-mood-fill' x1='0' y1='0' x2='0' y2='1'>
-                <stop
-                  offset='0%'
-                  stopColor='var(--p-success)'
-                  stopOpacity='0.32'
+            {/* guide lines */}
+            {[0, 1, 2, 3].map((level) => {
+              const y = PT + ((3 - level) / 3) * H
+              return (
+                <line
+                  key={level}
+                  x1={0} y1={y} x2={W} y2={y}
+                  stroke='var(--p-divider)'
+                  strokeWidth='1'
+                  strokeDasharray='4 5'
                 />
-                <stop
-                  offset='100%'
-                  stopColor='var(--p-success)'
-                  stopOpacity='0'
-                />
-              </linearGradient>
-            </defs>
-            <path d={area} fill='url(#gv-mood-fill)' />
-            <path
-              d={path}
-              fill='none'
-              stroke='var(--p-success)'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
-            {pts.map((p, i) => (
-              <circle
-                key={i}
-                cx={p[0]}
-                cy={p[1]}
-                r={i === pts.length - 1 ? 4 : 2.5}
-                fill={
-                  i === pts.length - 1 ? 'var(--p-success)' : 'var(--p-surface)'
-                }
-                stroke='var(--p-success)'
+              )
+            })}
+
+            {/* connecting line */}
+            {linePath && (
+              <path
+                d={linePath}
+                fill='none'
+                stroke='var(--p-text-3)'
                 strokeWidth='1.5'
+                strokeLinecap='round'
+                strokeLinejoin='round'
               />
+            )}
+
+            {/* dots */}
+            {last7.map((d, i) => {
+              const mood = byDate[d]
+              const x = xAt(i)
+              const isToday = d === todayStr
+
+              if (!mood) {
+                return (
+                  <circle
+                    key={d}
+                    cx={x}
+                    cy={PT + H / 2}
+                    r={isToday ? 4 : 3}
+                    fill='transparent'
+                    stroke='var(--p-bg-3)'
+                    strokeWidth='1.5'
+                  />
+                )
+              }
+
+              return (
+                <circle
+                  key={d}
+                  cx={x}
+                  cy={yAt(mood)}
+                  r={isToday ? 5.5 : 4}
+                  fill={MOOD_COLOR[mood]}
+                  opacity={isToday ? 1 : 0.8}
+                />
+              )
+            })}
+
+            {/* day labels */}
+            {last7.map((d, i) => (
+              <text
+                key={d}
+                x={xAt(i)}
+                y={H + PT + 20}
+                textAnchor='middle'
+                fontSize='10'
+                fill='var(--p-text-3)'
+                fontFamily='var(--f-text)'
+              >
+                {dayLabel(d)}
+              </text>
             ))}
           </svg>
-          <div className='flex justify-between mt-[6px] text-text-3 text-[10px]'>
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-              <span key={d}>{d}</span>
+
+          {/* legend */}
+          <div className='flex gap-4 mt-2 flex-wrap'>
+            {Object.entries(MOOD_LABEL).map(([k, label]) => (
+              <div key={k} className='flex items-center gap-[5px]'>
+                <div
+                  className='w-[7px] h-[7px] rounded-full'
+                  style={{ background: MOOD_COLOR[k] }}
+                />
+                <span className='text-text-3 text-[10px]'>{label}</span>
+              </div>
             ))}
           </div>
         </div>
