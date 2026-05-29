@@ -23,6 +23,7 @@ export function SessionDoneScreen({ nav }) {
     sessionSaved,
     consumeSessionSaved,
     updateLastEntryComment,
+    updateEntry,
     pendingCompletion,
     clearPendingCompletion,
   } = useAppStore()
@@ -47,7 +48,7 @@ export function SessionDoneScreen({ nav }) {
   const displayDurationSec = lastEntry?.durationSec ?? sessionDuration * 60
 
   useEffect(() => {
-    if (lastEntry?.comment) setCommentDraft(lastEntry.comment)
+    setCommentDraft(lastEntry?.comment ?? '')
   }, [lastEntry?.id])
 
   const streak = calcStreak(practiceLog)
@@ -99,19 +100,22 @@ export function SessionDoneScreen({ nav }) {
         </div>
 
         {/* tension */}
-        {lastEntry?.tension && (
+        {lastEntry && (
           <div className='mt-7'>
             <div className='flex gap-2'>
               {TENSION_OPTS.map(({ k, l, I }) => {
                 const on = lastEntry.tension === k
                 return (
-                  <div
+                  <button
                     key={k}
-                    className={`flex-1 flex flex-col items-center gap-[6px] py-3 rounded-md transition-colors duration-150 ${on ? 'bg-primary text-on-primary' : 'bg-bg-2 text-text-2'}`}
+                    onClick={() => updateEntry(lastEntry.id, { tension: k })}
+                    aria-pressed={on}
+                    aria-label={l}
+                    className={`flex-1 flex flex-col items-center gap-[6px] py-3 rounded-md border-none transition-colors duration-150 ${on ? 'bg-primary text-on-primary' : 'bg-bg-2 text-text-2'}`}
                   >
                     <I size={18} />
                     <span className='text-[10px] tracking-[0.06em]'>{l}</span>
-                  </div>
+                  </button>
                 )
               })}
             </div>

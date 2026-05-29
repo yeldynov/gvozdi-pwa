@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Icons from '../icons'
 import { useAppStore } from '../store/useAppStore'
 
@@ -6,6 +6,10 @@ export function SessionSetupScreen({ nav }) {
   const sessionDuration = useAppStore((s) => s.sessionDuration)
   const setSessionDuration = useAppStore((s) => s.setSessionDuration)
   const [dur, setDur] = useState(sessionDuration ?? 6)
+
+  useEffect(() => {
+    setDur(sessionDuration ?? 6)
+  }, [sessionDuration])
   const options = [3, 6, 10, 15]
 
   return (

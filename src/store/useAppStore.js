@@ -98,16 +98,24 @@ export const useAppStore = create(
         }),
 
       updateEntry: (id, changes) =>
-        set((state) => ({
-          practiceLog: state.practiceLog.map((e) =>
+        set((state) => {
+          const newLog = state.practiceLog.map((e) =>
             e.id === id ? { ...e, ...changes } : e,
-          ),
-        })),
+          )
+          return {
+            practiceLog: newLog,
+            earnedAchievementIds: calcEarnedAchievementIds(newLog),
+          }
+        }),
 
       deleteEntry: (id) =>
-        set((state) => ({
-          practiceLog: state.practiceLog.filter((e) => e.id !== id),
-        })),
+        set((state) => {
+          const newLog = state.practiceLog.filter((e) => e.id !== id)
+          return {
+            practiceLog: newLog,
+            earnedAchievementIds: calcEarnedAchievementIds(newLog),
+          }
+        }),
 
       setSelectedSession: (id, back = 'home') =>
         set({ selectedSessionId: id, sessionDetailBack: back }),

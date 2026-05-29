@@ -137,7 +137,8 @@ export function HomeScreen({ nav }) {
 
   const suggestedDuration = (() => {
     if (!lastSession) return 6
-    const mins = lastSession.durationSec / 60
+    const raw = Number(lastSession.durationSec)
+    const mins = Number.isFinite(raw) ? raw / 60 : 0
     if (mins < 1) return 1
     if (mins < 10) return Math.min(90, Math.round(mins) + 1)
     if (mins < 20) return Math.min(90, Math.round(mins) + 2)

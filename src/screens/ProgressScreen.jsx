@@ -427,10 +427,11 @@ export function ProgressScreen({ nav }) {
             {earnedMilestones.map((a) => {
               const I = ICON_MAP[a.icon] || Icons.star
               return (
-                <div
+                <button
                   key={a.id}
-                  className='card flex items-center gap-[14px] cursor-pointer active:opacity-70'
+                  className='card flex items-center gap-[14px] active:opacity-70 w-full text-left border-none bg-transparent p-0'
                   style={{ padding: 14 }}
+                  aria-label={a.label}
                   onClick={() => { setSelectedMilestone(a.id); nav('milestone-detail') }}
                 >
                   <div
@@ -449,7 +450,7 @@ export function ProgressScreen({ nav }) {
                     size={16}
                     style={{ color: 'var(--p-text-3)' }}
                   />
-                </div>
+                </button>
               )
             })}
           </div>
