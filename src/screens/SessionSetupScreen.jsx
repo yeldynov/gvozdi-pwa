@@ -3,9 +3,10 @@ import Icons from '../icons'
 import { useAppStore } from '../store/useAppStore'
 
 export function SessionSetupScreen({ nav }) {
-  const [dur, setDur] = useState(6)
-  const options = [3, 6, 10, 15]
+  const sessionDuration = useAppStore((s) => s.sessionDuration)
   const setSessionDuration = useAppStore((s) => s.setSessionDuration)
+  const [dur, setDur] = useState(sessionDuration ?? 6)
+  const options = [3, 6, 10, 15]
 
   return (
     <div className='h-full flex flex-col bg-bg pt-14 px-6 pb-[100px]'>
@@ -58,20 +59,28 @@ export function SessionSetupScreen({ nav }) {
           <div className='relative h-[6px] bg-bg-3 rounded-pill'>
             <div
               className='absolute top-0 left-0 h-full bg-primary rounded-pill'
-              style={{ width: `${(dur / 30) * 100}%` }}
+              style={{ width: `${((dur - 1) / 89) * 100}%` }}
             />
             <div
-              className='absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 bg-surface border border-divider rounded-pill'
+              className='absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 bg-surface border border-divider rounded-pill pointer-events-none'
               style={{
-                left: `${(dur / 30) * 100}%`,
+                left: `${((dur - 1) / 89) * 100}%`,
                 boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
               }}
+            />
+            <input
+              type='range'
+              min={1}
+              max={90}
+              value={dur}
+              onChange={(e) => setDur(Number(e.target.value))}
+              className='absolute inset-0 w-full h-full opacity-0 cursor-pointer'
             />
           </div>
           <div className='flex justify-between mt-2 text-text-3 text-[11px]'>
             <span>1 min</span>
-            <span>15</span>
-            <span>30 min</span>
+            <span>45</span>
+            <span>90 min</span>
           </div>
         </div>
 

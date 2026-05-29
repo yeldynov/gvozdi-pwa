@@ -44,7 +44,7 @@ const yAt = (mood) => PT + ((3 - (MOOD_LEVEL[mood] ?? 1)) / 3) * H
 export function ProgressScreen({ nav }) {
   const [period, setPeriod] = useState('week')
 
-  const { moodLog, practiceLog, earnedAchievementIds } = useAppStore()
+  const { moodLog, practiceLog, earnedAchievementIds, setSelectedMilestone } = useAppStore()
   const streak = calcStreak(practiceLog)
   const hasAnyPractice = practiceLog.length > 0
 
@@ -332,50 +332,19 @@ export function ProgressScreen({ nav }) {
                 )
               })}
 
-              {/* post-session dots per day: spread + vertical range line */}
-              {lastNDates.map((d, i) => {
-                const levels = postAllByDate[d]
-                if (!levels?.length) return null
-                const x = xAt(i)
-                const SPREAD = 7
-                const ys = levels.map((lv) => PT + ((3 - lv) / 3) * H)
-                const minY = Math.min(...ys)
-                const maxY = Math.max(...ys)
-                return (
-                  <g key={d}>
-                    {levels.length > 1 && (
-                      <line
-                        x1={x}
-                        y1={minY}
-                        x2={x}
-                        y2={maxY}
-                        stroke='var(--p-primary)'
-                        strokeWidth='1'
-                        opacity='0.3'
-                      />
-                    )}
-                    {levels.map((lv, j) => {
-                      const offset =
-                        levels.length === 1
-                          ? 0
-                          : (j - (levels.length - 1) / 2) * SPREAD
-                      const y = PT + ((3 - lv) / 3) * H
-                      return (
-                        <rect
-                          key={j}
-                          x={x + offset - 4}
-                          y={y - 4}
-                          width='8'
-                          height='8'
-                          transform={`rotate(45, ${x + offset}, ${y})`}
-                          fill='var(--p-primary)'
-                          opacity='0.85'
-                        />
-                      )
-                    })}
-                  </g>
-                )
-              })}
+              {/* post-session tension: single average dot per day */}
+              {postAvgPts.map((pt) => (
+                <rect
+                  key={pt.date}
+                  x={pt.x - 4}
+                  y={pt.y - 4}
+                  width='8'
+                  height='8'
+                  transform={`rotate(45, ${pt.x}, ${pt.y})`}
+                  fill='var(--p-primary)'
+                  opacity='0.85'
+                />
+              ))}
 
               {/* day labels */}
               {lastNDates.map((d, i) => (
@@ -460,8 +429,9 @@ export function ProgressScreen({ nav }) {
               return (
                 <div
                   key={a.id}
-                  className='card flex items-center gap-[14px]'
+                  className='card flex items-center gap-[14px] cursor-pointer active:opacity-70'
                   style={{ padding: 14 }}
+                  onClick={() => { setSelectedMilestone(a.id); nav('milestone-detail') }}
                 >
                   <div
                     className='flex items-center justify-center w-10 h-10 rounded-pill shrink-0'

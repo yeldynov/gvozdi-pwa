@@ -15,6 +15,7 @@ import { SessionActiveBoard } from './screens/SessionActiveBoard'
 import { SessionDoneScreen } from './screens/SessionDoneScreen'
 import { SessionsListScreen } from './screens/SessionsListScreen'
 import { SessionDetailScreen } from './screens/SessionDetailScreen'
+import { MilestoneDetailScreen } from './screens/MilestoneDetailScreen'
 import { AchievementOverlay } from './screens/AchievementOverlay'
 import './globals.css'
 
@@ -106,6 +107,7 @@ function App() {
     'session-done': <SessionDoneScreen nav={nav} />,
     'sessions-list': <SessionsListScreen nav={nav} />,
     'session-detail': <SessionDetailScreen nav={nav} />,
+    'milestone-detail': <MilestoneDetailScreen nav={nav} />,
   }
 
   return (

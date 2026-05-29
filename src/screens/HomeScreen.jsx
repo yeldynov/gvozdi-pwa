@@ -103,13 +103,17 @@ export function HomeScreen({ nav }) {
   const {
     selectedMood,
     setMood,
+    moodLog,
     clearAll,
     _hasHydrated,
     practiceLog,
     setSelectedSession,
+    setSessionDuration,
   } = useAppStore()
-  const selectedMoodData = selectedMood
-    ? MOOD_OPTS.find((o) => o.k === selectedMood)
+  const todayStr = new Date().toLocaleDateString('en-CA')
+  const todayMood = moodLog.find((e) => e.date === todayStr)?.mood ?? null
+  const selectedMoodData = todayMood
+    ? MOOD_OPTS.find((o) => o.k === todayMood)
     : null
   const MoodIcon = selectedMoodData?.I || null
 
@@ -129,6 +133,16 @@ export function HomeScreen({ nav }) {
         (a, b) => (Number(b.id) || 0) - (Number(a.id) || 0),
       )[0]
     : null
+
+  const suggestedDuration = (() => {
+    if (!lastSession) return 6
+    const mins = lastSession.durationSec / 60
+    if (mins < 1) return 1
+    if (mins < 10) return Math.min(90, Math.round(mins) + 1)
+    if (mins < 20) return Math.min(90, Math.round(mins) + 2)
+    if (mins < 30) return Math.min(90, Math.round(mins) + 5)
+    return Math.min(90, Math.round(mins) + 10)
+  })()
 
   const recentSessions = [...practiceLog]
     .sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0))
@@ -160,13 +174,13 @@ export function HomeScreen({ nav }) {
             <br />
             {firstName}.
           </div>
-          {_hasHydrated && selectedMood && (
+          {_hasHydrated && todayMood && (
             <div className='mt-[10px] animate-fade-up flex items-center gap-[8px]'>
               {MoodIcon && (
                 <MoodIcon size={14} className='text-text-2 shrink-0' />
               )}
               <div className='display font-light text-text-2 text-[15px] leading-[1.4] italic'>
-                {MOOD_QUOTES[selectedMood]}
+                {MOOD_QUOTES[todayMood]}
               </div>
             </div>
           )}
@@ -207,10 +221,10 @@ export function HomeScreen({ nav }) {
         </div>
 
         {/* mood — hidden after hydration if mood already selected */}
-        {_hasHydrated && !selectedMood && (
+        {_hasHydrated && !todayMood && (
           <div>
             <div className='text-text-2 mb-[10px] text-[13px]'>
-              How does it land?
+              How do you feel today?
             </div>
             <div className='grid grid-cols-4 gap-2'>
               {MOOD_OPTS.map((o) => {
@@ -253,7 +267,8 @@ export function HomeScreen({ nav }) {
               Today's practice
             </div>
             <div className='display text-[26px] leading-[1.1] font-light'>
-              6 minutes
+              {suggestedDuration}{' '}
+              {suggestedDuration === 1 ? 'minute' : 'minutes'}
               <br />
               on the board
             </div>
@@ -265,7 +280,10 @@ export function HomeScreen({ nav }) {
                 : 'Your first session'}
             </div>
             <button
-              onClick={() => nav('session-setup')}
+              onClick={() => {
+                setSessionDuration(suggestedDuration)
+                nav('session')
+              }}
               className='border-none bg-on-primary text-primary rounded-pill flex items-center gap-[6px] font-medium py-3 px-[18px] text-[14px]'
             >
               Begin <Icons.chevron_right size={14} />

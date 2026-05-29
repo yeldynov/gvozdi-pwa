@@ -98,6 +98,9 @@ const Icons = {
   edit: ic(<>
     <path d="M4 20h4l11-11-4-4L4 16v4z"/>
   </>),
+  trash: ic(<>
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+  </>),
   bell: ic(<>
     <path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8zM10 21a2 2 0 0 0 4 0"/>
   </>),
