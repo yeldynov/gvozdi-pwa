@@ -4,14 +4,16 @@ import { useAppStore } from '../store/useAppStore'
 import { calcStreak } from '../store/achievements'
 import { fmt } from '../hooks/useSessionTimer'
 
+const TENSION_OPTS = [
+  { k: 'intense', l: 'Intense', I: Icons.flame },
+  { k: 'tense', l: 'Tense', I: Icons.spark },
+  { k: 'mild', l: 'Mild', I: Icons.moon },
+  { k: 'easy', l: 'Easy', I: Icons.leaf },
+]
+
 export function SessionDoneScreen({ nav }) {
-  const [mood, setMood] = useState('settled')
-  const moods = [
-    { k: 'tense', l: 'Tense' },
-    { k: 'mixed', l: 'Mixed' },
-    { k: 'settled', l: 'Settled' },
-    { k: 'open', l: 'Open' },
-  ]
+  const [editing, setEditing] = useState(false)
+  const [commentDraft, setCommentDraft] = useState('')
 
   const {
     practiceLog,
@@ -20,7 +22,8 @@ export function SessionDoneScreen({ nav }) {
     sessionDuration,
     sessionSaved,
     consumeSessionSaved,
-    updateLastEntryPostMood,
+    updateLastEntryComment,
+    updateEntry,
     pendingCompletion,
     clearPendingCompletion,
   } = useAppStore()
@@ -44,6 +47,10 @@ export function SessionDoneScreen({ nav }) {
   const lastEntry = practiceLog[practiceLog.length - 1]
   const displayDurationSec = lastEntry?.durationSec ?? sessionDuration * 60
 
+  useEffect(() => {
+    setCommentDraft(lastEntry?.comment ?? '')
+  }, [lastEntry?.id])
+
   const streak = calcStreak(practiceLog)
 
   return (
@@ -63,8 +70,10 @@ export function SessionDoneScreen({ nav }) {
             Session {practiceLog.length} · complete
           </div>
           <div className='display text-[30px] leading-[1.1]'>
-            {Math.floor(displayDurationSec / 60)} minutes.
-            <br />
+            {displayDurationSec >= 60
+              ? `${Math.floor(displayDurationSec / 60)} minutes.`
+              : null}
+            {displayDurationSec >= 60 && <br />}
             Well done.
           </div>
         </div>
@@ -88,52 +97,72 @@ export function SessionDoneScreen({ nav }) {
               day streak
             </div>
           </div>
-          <div className='w-[1px] bg-divider' />
-          <div className='text-center'>
-            <div className='num display text-[32px] font-light leading-none'>
-              ↘ 4
-            </div>
-            <div className='text-text-3 uppercase mt-[6px] text-[10px] tracking-[0.1em]'>
-              resting bpm
-            </div>
-          </div>
         </div>
 
-        {/* mood */}
-        <div className='mt-7'>
-          <div className='text-text-2 mb-[10px] text-[13px]'>
-            How did it land?
+        {/* tension */}
+        {lastEntry && (
+          <div className='mt-7'>
+            <div className='flex gap-2'>
+              {TENSION_OPTS.map(({ k, l, I }) => {
+                const on = lastEntry.tension === k
+                return (
+                  <button
+                    key={k}
+                    onClick={() => updateEntry(lastEntry.id, { tension: k })}
+                    aria-pressed={on}
+                    aria-label={l}
+                    className={`flex-1 flex flex-col items-center gap-[6px] py-3 rounded-md border-none transition-colors duration-150 ${on ? 'bg-primary text-on-primary' : 'bg-bg-2 text-text-2'}`}
+                  >
+                    <I size={18} />
+                    <span className='text-[10px] tracking-[0.06em]'>{l}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
-          <div className='flex gap-[6px]'>
-            {moods.map((m) => {
-              const on = mood === m.k
-              return (
-                <button
-                  key={m.k}
-                  onClick={() => {
-                    setMood(m.k)
-                    updateLastEntryPostMood(m.k)
-                  }}
-                  className={`flex-1 rounded-pill font-medium transition-all duration-150 py-[10px] px-1 text-[13px] ${on ? 'bg-primary text-on-primary border-primary' : 'bg-transparent text-text border-divider'} border`}
-                >
-                  {m.l}
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        )}
 
         {/* journal prompt */}
         <div className='card flat mt-[14px]' style={{ padding: 16 }}>
           <div className='text-text-3 uppercase mb-2 text-[11px] tracking-[0.1em]'>
             One honest line
           </div>
-          <div className='text-text-2 italic text-[14px] leading-[1.5]'>
-            "The middle was the hardest. Then it wasn't."
-          </div>
-          <div className='mt-[10px] text-text-3 flex items-center gap-[6px] text-[12px]'>
-            <Icons.edit size={13} /> Edit
-          </div>
+          {editing ? (
+            <>
+              <textarea
+                value={commentDraft}
+                onChange={(e) => setCommentDraft(e.target.value)}
+                className='w-full bg-transparent text-text text-[14px] leading-[1.5] resize-none outline-none'
+                rows={3}
+                autoFocus
+                placeholder='How did this session feel?'
+              />
+              <button
+                onClick={() => {
+                  updateLastEntryComment(commentDraft)
+                  setEditing(false)
+                }}
+                className='mt-[10px] text-primary text-[12px]'
+              >
+                Save
+              </button>
+            </>
+          ) : (
+            <>
+              <div className='text-text-2 italic text-[14px] leading-[1.5]'>
+                {lastEntry?.comment
+                  ? `"${lastEntry.comment}"`
+                  : 'Add a note about this session...'}
+              </div>
+              <div
+                className='mt-[10px] text-text-3 flex items-center gap-[6px] text-[12px] cursor-pointer'
+                onClick={() => setEditing(true)}
+              >
+                <Icons.edit size={13} />{' '}
+                {lastEntry?.comment ? 'Edit' : 'Add'}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

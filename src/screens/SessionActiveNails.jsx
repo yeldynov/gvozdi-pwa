@@ -264,6 +264,15 @@ export function SessionActiveNails({ nav }) {
 
       {/* controls */}
       <div className='flex justify-center items-center gap-5'>
+        {/* DEV: remove before release */}
+        {process.env.NODE_ENV === 'development' && (
+          <button
+            onClick={() => t.addSeconds(180)}
+            className='border-none bg-bg-2 text-text-3 text-[11px] rounded-pill px-3 py-1'
+          >
+            +3 min
+          </button>
+        )}
         <button
           onClick={t.toggle}
           className='border-none bg-primary text-on-primary w-[72px] h-[72px] rounded-pill flex items-center justify-center'

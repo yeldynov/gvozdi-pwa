@@ -17,6 +17,7 @@ export const useAppStore = create(
       sessionDetailBack: 'home',
       earnedAchievementIds: [],
       pendingAchievement: null,
+      selectedMilestoneId: null,
       _hasHydrated: false,
 
       setMood: (mood) =>
@@ -88,8 +89,43 @@ export const useAppStore = create(
           return { practiceLog: log }
         }),
 
+      updateLastEntryComment: (comment) =>
+        set((state) => {
+          if (!state.practiceLog.length) return {}
+          const log = [...state.practiceLog]
+          log[log.length - 1] = { ...log[log.length - 1], comment }
+          return { practiceLog: log }
+        }),
+
+      updateEntry: (id, changes) =>
+        set((state) => {
+          const newLog = state.practiceLog.map((e) =>
+            e.id === id ? { ...e, ...changes } : e,
+          )
+          return {
+            practiceLog: newLog,
+            earnedAchievementIds: calcEarnedAchievementIds(newLog),
+          }
+        }),
+
+      deleteEntry: (id) =>
+        set((state) => {
+          const newLog = state.practiceLog.filter((e) => e.id !== id)
+          return {
+            practiceLog: newLog,
+            earnedAchievementIds: calcEarnedAchievementIds(newLog),
+          }
+        }),
+
       setSelectedSession: (id, back = 'home') =>
         set({ selectedSessionId: id, sessionDetailBack: back }),
+
+      setSelectedMilestone: (id) => set({ selectedMilestoneId: id }),
+
+      recalcAchievements: () =>
+        set((state) => ({
+          earnedAchievementIds: calcEarnedAchievementIds(state.practiceLog),
+        })),
 
       clearPendingAchievement: () => set({ pendingAchievement: null }),
 
