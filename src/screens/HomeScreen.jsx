@@ -109,6 +109,7 @@ export function HomeScreen({ nav }) {
     practiceLog,
     setSelectedSession,
     setSessionDuration,
+    recalcAchievements,
   } = useAppStore()
   const todayStr = new Date().toLocaleDateString('en-CA')
   const todayMood = moodLog.find((e) => e.date === todayStr)?.mood ?? null
@@ -416,13 +417,21 @@ export function HomeScreen({ nav }) {
 
         {/* dev: clear stored data */}
         {isDev && (
-          <button
-            onClick={handleClearData}
-            className='flex items-center justify-center gap-[6px] w-full py-[10px] border border-dashed border-divider rounded-md text-text-3 text-[11px] bg-transparent'
-          >
-            <Icons.close size={11} />
-            Clear stored data
-          </button>
+          <div className='flex flex-col gap-2'>
+            <button
+              onClick={recalcAchievements}
+              className='flex items-center justify-center gap-[6px] w-full py-[10px] border border-dashed border-divider rounded-md text-text-3 text-[11px] bg-transparent'
+            >
+              Recalc achievements
+            </button>
+            <button
+              onClick={handleClearData}
+              className='flex items-center justify-center gap-[6px] w-full py-[10px] border border-dashed border-divider rounded-md text-text-3 text-[11px] bg-transparent'
+            >
+              <Icons.close size={11} />
+              Clear stored data
+            </button>
+          </div>
         )}
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import Icons from '../icons'
 import { useAppStore } from '../store/useAppStore'
-import { ACHIEVEMENTS } from '../store/achievements'
+import { ACHIEVEMENTS, calcAchievementEarnedTimestamp } from '../store/achievements'
 
 const ICON_MAP = {
   flame: Icons.flame,
@@ -12,7 +12,7 @@ const ICON_MAP = {
 }
 
 export function MilestoneDetailScreen({ nav }) {
-  const { selectedMilestoneId } = useAppStore()
+  const { selectedMilestoneId, practiceLog } = useAppStore()
   const milestone = ACHIEVEMENTS.find((a) => a.id === selectedMilestoneId)
 
   useEffect(() => {
@@ -22,6 +22,15 @@ export function MilestoneDetailScreen({ nav }) {
   if (!milestone) return null
 
   const I = ICON_MAP[milestone.icon] || Icons.star
+
+  const ts = calcAchievementEarnedTimestamp(milestone.id, practiceLog)
+  const earnedAt = ts
+    ? new Date(ts).toLocaleDateString('en-US', {
+        month: 'long', day: 'numeric', year: 'numeric',
+      }) + ' · ' + new Date(ts).toLocaleTimeString('en-US', {
+        hour: 'numeric', minute: '2-digit',
+      })
+    : null
 
   return (
     <div className='h-full overflow-auto bg-bg'>
@@ -50,6 +59,9 @@ export function MilestoneDetailScreen({ nav }) {
             {milestone.label}
           </div>
           <div className='text-text-2 text-[15px]'>{milestone.desc}</div>
+          {earnedAt && (
+            <div className='text-text-3 text-[12px] mt-3'>{earnedAt}</div>
+          )}
         </div>
 
         {/* divider */}

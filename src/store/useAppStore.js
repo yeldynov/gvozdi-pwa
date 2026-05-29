@@ -114,6 +114,11 @@ export const useAppStore = create(
 
       setSelectedMilestone: (id) => set({ selectedMilestoneId: id }),
 
+      recalcAchievements: () =>
+        set((state) => ({
+          earnedAchievementIds: calcEarnedAchievementIds(state.practiceLog),
+        })),
+
       clearPendingAchievement: () => set({ pendingAchievement: null }),
 
       clearAll: () =>
